@@ -4,36 +4,36 @@
 
 </div>
 
-# 👋 Hi, I'm Abdelrahman Seleem
+# Hi, I'm Abdelrahman Seleem
 
-### 🤖 AI Engineer | Machine Learning | Generative AI | RAG | Agentic AI | Data Science | Data Analysis
+### AI Engineer | Machine Learning | Generative AI | RAG | Agentic AI | Data Science
 
-Building intelligent systems with **AI, data, and modern software technologies.**
-
----
-
-## 🧑‍💻 About Me
-
-I'm a **Data Science & Artificial Intelligence student** interested in building practical AI systems and turning data into useful insights.
-
-My main areas of interest include:
-
-- 🤖 Artificial Intelligence & Machine Learning
-- 🧠 Generative AI & Large Language Models
-- 🔎 Retrieval-Augmented Generation (RAG)
-- 🤝 Agentic AI & AI Agents
-- 📊 Data Science & Data Analysis
-- 🗄️ Data Engineering & SQL
-- 👁️ Computer Vision
-- ☁️ AI Deployment & Cloud Technologies
-
-I enjoy learning new technologies, building projects, and experimenting with different approaches to solve real-world problems.
+I build practical AI and data-driven applications, with a focus on machine learning, generative AI, and intelligent systems.
 
 ---
 
-## 🧠 AI & Machine Learning
+## About Me
 
-### Languages & Core Libraries
+I'm a Data Science & Artificial Intelligence student interested in building real-world applications and understanding how AI systems work from data to deployment.
+
+My main areas of interest are:
+
+- Artificial Intelligence & Machine Learning
+- Generative AI & Large Language Models
+- Retrieval-Augmented Generation (RAG)
+- Agentic AI & AI Agents
+- Data Science & Data Analysis
+- Data Engineering & SQL
+- Computer Vision
+- AI Deployment & Cloud Technologies
+
+I like learning by building projects, experimenting with different approaches, and turning what I learn into practical applications.
+
+---
+
+## AI & Machine Learning
+
+### Languages & Libraries
 
 <p align="left">
 <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" />
@@ -50,30 +50,21 @@ I enjoy learning new technologies, building projects, and experimenting with dif
 <img src="https://img.shields.io/badge/OpenCV-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white" />
 </p>
 
-- Supervised Learning
-- Unsupervised Learning
-- Feature Engineering
-- Model Evaluation
-- Classification
-- Regression
-- Clustering
-- Computer Vision
-- Deep Learning
+**Areas:** Machine Learning, Deep Learning, Classification, Regression, Clustering, Feature Engineering, Model Evaluation, Computer Vision
 
 ---
 
-## 🤖 Generative AI
+## Generative AI
 
 <p align="left">
 <img src="https://img.shields.io/badge/Hugging%20Face-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" />
 <img src="https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white" />
 </p>
 
-- Large Language Models (LLMs)
+- Large Language Models
 - Prompt Engineering
-- Retrieval-Augmented Generation (RAG)
-- Embeddings
-- Vector Search
+- Retrieval-Augmented Generation
+- Embeddings & Vector Search
 - Semantic Search
 - AI Agents
 - Agentic AI
@@ -83,7 +74,7 @@ I enjoy learning new technologies, building projects, and experimenting with dif
 
 ---
 
-## 📊 Data Science & Data Analysis
+## Data Science & Data Analysis
 
 <p align="left">
 <img src="https://img.shields.io/badge/SQL-4479A1?style=for-the-badge&logo=postgresql&logoColor=white" />
@@ -92,20 +83,18 @@ I enjoy learning new technologies, building projects, and experimenting with dif
 <img src="https://img.shields.io/badge/Excel-217346?style=for-the-badge&logo=microsoftexcel&logoColor=white" />
 </p>
 
-- Data Cleaning
-- Exploratory Data Analysis (EDA)
-- Data Visualization
+- Data Cleaning & Preparation
+- Exploratory Data Analysis
 - Statistical Analysis
+- Data Visualization
 - SQL Analysis
 - Dashboard Development
 - Business Intelligence
 - Data Storytelling
-- Data Preparation
-- Feature Engineering
 
 ---
 
-## 🛠️ Tools & Technologies
+## Tools & Technologies
 
 <p align="left">
 <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white" />
@@ -122,51 +111,49 @@ I enjoy learning new technologies, building projects, and experimenting with dif
 
 ---
 
-## 🚀 Featured Projects
+## Featured Projects
 
-### 🔎 Semantic Search & RAG System
-A semantic search system using embeddings, vector search, and Retrieval-Augmented Generation to retrieve relevant information from documents.
+### Semantic Search & RAG System
 
-### 🤖 MediBot
-An AI-powered chatbot application built using Google's Gemini models for conversational interaction and information retrieval.
+A semantic search application using embeddings, vector search, and RAG to retrieve relevant information from documents.
 
-### 🚗 Traffic Detection & Tracking
-Computer vision project using **YOLOv8, ByteTrack, and OpenCV** for real-time vehicle detection and tracking.
+### MediBot
 
-### 🏦 Bank Marketing Analytics
-Data analysis project using **Python, Pandas, and Streamlit** to explore customer behavior and marketing campaign performance.
+An AI chatbot built with Google's Gemini models for conversational interaction and information retrieval.
+
+### Traffic Detection & Tracking
+
+A computer vision project using YOLOv8, ByteTrack, and OpenCV for vehicle detection and tracking.
+
+### Bank Marketing Analytics
+
+A data analysis project using Python, Pandas, and Streamlit to explore customer behavior and marketing campaign data.
 
 ---
 
-## 📚 Currently Learning
+## Currently Learning
 
 ```text
 Generative AI
-     │
-     ├── Large Language Models
-     ├── Prompt Engineering
-     ├── RAG
-     │    ├── Embeddings
-     │    ├── Vector Search
-     │    └── Retrieval
-     │
-     ├── AI Agents
-     ├── Agentic AI
-     ├── Multi-Agent Systems
-     └── AI Memory Systems
+│
+├── Large Language Models
+├── Prompt Engineering
+├── RAG
+│   ├── Embeddings
+│   ├── Vector Search
+│   └── Retrieval
+│
+├── AI Agents
+├── Agentic AI
+├── Multi-Agent Systems
+└── AI Memory Systems
 ```
 
-### Also Exploring
-
-- 🤗 Hugging Face
-- 🧠 LLM Application Development
-- 🚀 AI Deployment
-- ☁️ Cloud Technologies
-- 🗄️ Data Engineering
+I'm also exploring Hugging Face, LLM application development, AI deployment, cloud technologies, and data engineering.
 
 ---
 
-## 📈 GitHub Stats
+## GitHub Stats
 
 <div align="center">
 
@@ -178,17 +165,7 @@ Generative AI
 
 ---
 
-## 🔥 GitHub Streak
-
-<div align="center">
-
-<img src="https://streak-stats.demolab.com?user=Seleem488&theme=tokyonight&hide_border=true" />
-
-</div>
-
----
-
-## 🤝 Connect With Me
+## Connect With Me
 
 <p align="left">
 
@@ -204,12 +181,8 @@ Generative AI
 <img src="https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white" />
 </a>
 
-<a href="tel:+201014913652">
-<img src="https://img.shields.io/badge/Phone-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" />
-</a>
-
 </p>
 
 ---
 
-### 💡 Learn • Build • Experiment • Deploy
+### Learn. Build. Experiment. Deploy.
