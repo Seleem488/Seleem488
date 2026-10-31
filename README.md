@@ -68,7 +68,7 @@ Areas of focus:
 - Practical AI solutions and collaborative development.
 - Project-based learning and technical problem-solving.
 
-### Rowad Misr Initiative — Agentic AI Training
+### Digital Egypt Pioneers Initiative - Depi — Agentic AI Training
 
 **2026 | Currently Participating**
 
@@ -82,7 +82,7 @@ Areas of focus:
 - Tool Calling and AI Application Development.
 - Multi-Agent Systems.
 
-### Rowad Misr Initiative — Data Analysis Training
+### Digital Egypt Pioneers Initiative - Depi — Data Analysis Training
 
 **2025 | Completed**
 
