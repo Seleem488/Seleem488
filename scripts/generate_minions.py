@@ -1,6 +1,6 @@
 
 #!/usr/bin/env python3
-"""Generate an animated Minion-style character eating GitHub contribution squares."""
+"""Generate an animated Minion eating banana-shaped GitHub contributions."""
 
 from datetime import date, timedelta
 from html.parser import HTMLParser
@@ -11,7 +11,7 @@ USERNAME = "Seleem488"
 TODAY = date.today()
 START = TODAY - timedelta(days=364)
 
-# GitHub's contribution calendar is arranged in Sunday-first columns.
+# GitHub contribution calendar starts on Sunday.
 GRID_START = START - timedelta(days=(START.weekday() + 1) % 7)
 
 WEEKS, DAYS = 53, 7
@@ -22,15 +22,17 @@ LEFT, TOP = 18, 34
 WIDTH = LEFT * 2 + WEEKS * STEP - GAP
 HEIGHT = TOP + DAYS * STEP + 26
 
-LEVEL_COLORS = [
-    "#161b22",
-    "#0e4429",
-    "#006d32",
-    "#26a641",
-    "#39d353",
-]
+EMPTY_COLOR = "#161b22"
+
+BANANA_COLORS = {
+    1: "#facc15",
+    2: "#fbbf24",
+    3: "#f59e0b",
+    4: "#eab308",
+}
 
 ANIMATION_SECONDS = 72
+CHEW_DURATION = 0.12
 
 
 class ContributionParser(HTMLParser):
@@ -107,9 +109,7 @@ def build_route():
                 point_days.append(day)
 
     if len(points) < 2:
-        raise RuntimeError(
-            "Not enough contribution dates to animate the character."
-        )
+        raise RuntimeError("Not enough contribution dates to animate.")
 
     path = "M " + " L ".join(
         f"{x:.1f},{y:.1f}" for x, y in points
@@ -123,8 +123,81 @@ def build_route():
     return points, point_days, point_index, path
 
 
+def get_eat_times(levels, point_days, point_index, point_count):
+    """Return animation times for all non-empty contribution days."""
+
+    times = []
+
+    for day in point_days:
+        if levels.get(day, 0) <= 0:
+            continue
+
+        eat_at = (
+            ANIMATION_SECONDS
+            * point_index[day]
+            / (point_count - 1)
+        )
+
+        # The final route point coincides with the next animation cycle.
+        if eat_at >= ANIMATION_SECONDS - 0.000001:
+            continue
+
+        times.append(eat_at)
+
+    return times
+
+
+def build_chewing_animation(eat_times):
+    """Generate mouth keyframes synchronized with banana eating."""
+
+    frames = {0.0: 0.55, ANIMATION_SECONDS: 0.55}
+
+    for eat_at in eat_times:
+        if eat_at <= 0.000001:
+            frames[0.0] = 2.0
+            frames[CHEW_DURATION] = 0.55
+            continue
+
+        close_at = min(
+            ANIMATION_SECONDS,
+            eat_at + CHEW_DURATION
+        )
+
+        frames[max(0.0, eat_at - 0.06)] = 0.55
+        frames[eat_at] = 2.0
+        frames[close_at] = 0.55
+
+    ordered_frames = sorted(frames.items())
+
+    values = ";".join(
+        f"{value:.2f}" for _, value in ordered_frames
+    )
+
+    key_times = ";".join(
+        f"{time / ANIMATION_SECONDS:.6f}"
+        for time, _ in ordered_frames
+    )
+
+    return (
+        '<animate attributeName="ry" '
+        f'values="{values}" '
+        f'keyTimes="{key_times}" '
+        f'dur="{ANIMATION_SECONDS}s" '
+        'repeatCount="indefinite"/>'
+    )
+
+
 def svg_document(levels):
     points, point_days, point_index, path = build_route()
+
+    eat_times = get_eat_times(
+        levels,
+        point_days,
+        point_index,
+        len(points)
+    )
+
+    chewing_animation = build_chewing_animation(eat_times)
 
     parts = [
         (
@@ -133,36 +206,37 @@ def svg_document(levels):
             f'width="{WIDTH}" height="{HEIGHT}" '
             f'viewBox="0 0 {WIDTH} {HEIGHT}" role="img">'
         ),
+
+        '<title>Minion Banana Contribution Graph</title>',
+
         (
-            '<title>Animated Minion eating GitHub contribution squares</title>'
+            '<desc>A Minion travels across a GitHub contribution calendar, '
+            'eating tiny bananas that represent contribution days.</desc>'
         ),
-        (
-            '<desc>A Minion travels across the contribution calendar '
-            'and green contribution squares disappear as it reaches them.</desc>'
-        ),
+
         '<rect width="100%" height="100%" rx="12" fill="#0d1117"/>',
 
         '<g font-family="Arial, sans-serif" font-size="10" fill="#8b949e">',
         f'<text x="{LEFT}" y="15">Less</text>',
     ]
 
-    # Contribution level legend.
-    for i, color in enumerate(LEVEL_COLORS):
+    # Banana intensity legend.
+    for i, level in enumerate(range(1, 5)):
         x = LEFT + 32 + i * 14
 
         parts.append(
             f'<rect x="{x}" y="7" width="10" height="10" '
-            f'rx="2" fill="{color}"/>'
+            f'rx="2" fill="{BANANA_COLORS[level]}"/>'
         )
 
     parts.append(
-        f'<text x="{LEFT + 32 + 5 * 14 + 3}" y="15">More</text>'
+        f'<text x="{LEFT + 32 + 4 * 14 + 3}" y="15">More</text>'
     )
 
     parts.append('</g>')
     parts.append('<g shape-rendering="geometricPrecision">')
 
-    # Draw contribution cells.
+    # Draw bananas instead of green contribution squares.
     for col in range(WEEKS):
         for row in range(DAYS):
             day = GRID_START + timedelta(days=col * 7 + row)
@@ -175,34 +249,60 @@ def svg_document(levels):
             x = LEFT + col * STEP
             y = TOP + row * STEP
 
-            eat_animation = ""
-
-            # Only non-empty contribution squares are edible.
-            if level > 0:
-                eat_at = (
-                    ANIMATION_SECONDS
-                    * point_index[day]
-                    / (len(points) - 1)
+            # Empty contribution days remain dark.
+            if level == 0:
+                parts.append(
+                    f'<rect x="{x}" y="{y}" '
+                    f'width="{CELL}" height="{CELL}" '
+                    f'rx="2" fill="{EMPTY_COLOR}">'
+                    f'<title>{day.isoformat()}: no contributions</title>'
+                    '</rect>'
                 )
+                continue
 
-                eat_animation = (
-                    '<animate '
-                    'attributeName="opacity" '
-                    'values="1;0;0;1" '
-                    'keyTimes="0;0.004;0.996;1" '
-                    f'dur="{ANIMATION_SECONDS}s" '
-                    f'begin="{eat_at:.3f}s" '
-                    'repeatCount="indefinite"/>'
-                )
+            banana_color = BANANA_COLORS[level]
 
+            eat_at = (
+                ANIMATION_SECONDS
+                * point_index[day]
+                / (len(points) - 1)
+            )
+
+            # Banana disappears when the Minion reaches it.
             parts.append(
-                f'<rect x="{x}" y="{y}" '
-                f'width="{CELL}" height="{CELL}" '
-                f'rx="2" fill="{LEVEL_COLORS[level]}">'
+                f'<g transform="translate({x},{y})">'
+
                 f'<title>{day.isoformat()}: '
                 f'contribution level {level}</title>'
-                f'{eat_animation}'
-                '</rect>'
+
+                # Banana body.
+                f'<path d="M1.1 6.9 '
+                f'C2.3 8.7 5.7 9.0 7.9 6.0 '
+                f'C9.0 4.5 9.2 2.8 8.8 1.5 '
+                f'C8.5 3.9 6.5 6.2 4.3 7.0 '
+                f'C3.0 7.5 2.0 7.4 1.1 6.9 Z" '
+                f'fill="{banana_color}" '
+                f'stroke="#a16207" stroke-width="0.65"/>'
+
+                # Banana stem.
+                f'<path d="M8.7 1.6 L9.5 0.8" '
+                f'stroke="#854d0e" stroke-width="1.1" '
+                f'stroke-linecap="round"/>'
+
+                # Banana tip.
+                f'<path d="M1.1 6.9 L0.6 7.8" '
+                f'stroke="#854d0e" stroke-width="1.1" '
+                f'stroke-linecap="round"/>'
+
+                # Eating animation.
+                f'<animate attributeName="opacity" '
+                f'values="1;0;0;1" '
+                f'keyTimes="0;0.004;0.996;1" '
+                f'dur="{ANIMATION_SECONDS}s" '
+                f'begin="{eat_at:.3f}s" '
+                f'repeatCount="indefinite"/>'
+
+                '</g>'
             )
 
     parts.append('</g>')
@@ -264,14 +364,9 @@ def svg_document(levels):
         '<circle cx="7.1" cy="10.5" r="0.55" fill="#111827"/>',
         '<circle cx="11.2" cy="10.5" r="0.55" fill="#111827"/>',
 
-        # Animated chewing mouth.
+        # Mouth: opens only when eating a banana.
         '<ellipse cx="9" cy="14.3" rx="2.1" ry="0.55" fill="#6b3c12">',
-        (
-            '<animate attributeName="ry" '
-            'values="0.55;1.8;0.55" '
-            'dur="0.39s" '
-            'repeatCount="indefinite"/>'
-        ),
+        chewing_animation,
         '</ellipse>',
 
         # Arms.
@@ -309,9 +404,14 @@ def main():
         encoding="utf-8",
     )
 
+    banana_count = sum(
+        1 for level in levels.values() if level > 0
+    )
+
     print(
         f"Generated {output} with "
-        f"{len(levels)} contribution dates."
+        f"{len(levels)} contribution dates "
+        f"and {banana_count} bananas."
     )
 
 
