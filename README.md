@@ -1,4 +1,4 @@
- 
+
 <div align="center">
 
 <img src="./WhatsApp%20Image%202026-10-31%20at%204.51.38%20PM.jpeg" width="100%" alt="Abdelrhman Seleem - AI Engineer" />
@@ -24,6 +24,16 @@ Building intelligent systems through data, machine learning, and modern AI techn
 <a href="https://wa.me/201014913652">
   <img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="WhatsApp"/>
 </a>
+
+<br/>
+
+<img src="./assets/robot.svg" width="180" alt="BashaBot - My AI Lab Mascot"/>
+
+<h3>Hey! Welcome to my Lab 🤖</h3>
+
+<sub>Exploring AI, building intelligent systems, and turning ideas into reality.</sub>
+
+<br/>
 
 </div>
 
