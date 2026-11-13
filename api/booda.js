@@ -1,17 +1,17 @@
 
 const messages = [
   "Hey Human! Welcome to my Lab 👾",
-  "Scanning visitor... AI Engineer detected!",
+  "Booda is scanning you... AI Engineer detected!",
   "Ready for some AI experiments? 🧪",
   "Warning: Too much curiosity detected! 😂",
-  "BashaBot is online. Let's build something awesome ⚡",
-  "Beep boop! Another day, another AI experiment 🚀",
-  "Curiosity detected. Welcome to the Lab! 🔬",
+  "BOODA is online. Let's build something awesome ⚡",
+  "Beep boop! Booda is ready for action 🚀",
+  "Curiosity detected. Welcome to Booda's Lab! 🔬",
   "010101... Human detected. Access granted! 🤖",
-  "Building the future, one line at a time!",
+  "Booda is building the future, one line at a time!",
   "Welcome to my digital playground! 🎮",
-  "Keep calm and let AI do the magic!",
-  "System online. Creativity at maximum level!"
+  "Keep calm and let Booda do the magic!",
+  "Booda's system online. Creativity at maximum level!"
 ];
 
 function escapeXml(value) {
@@ -99,7 +99,7 @@ export default function handler(req, res) {
 
   <circle cx="35" cy="70" r="4" fill="#fbbf24"/>
 
-  <text x="52" y="82" class="small">BASHABOT SAYS:</text>
+  <text x="52" y="82" class="small">BOODA SAYS:</text>
 
   <foreignObject x="30" y="94" width="305" height="58">
     <div xmlns="http://www.w3.org/1999/xhtml"
@@ -110,7 +110,7 @@ export default function handler(req, res) {
     </div>
   </foreignObject>
 
-  <!-- Robot -->
+  <!-- BOODA Robot -->
   <g class="robot">
 
     <!-- Antenna -->
@@ -206,15 +206,17 @@ export default function handler(req, res) {
   <rect x="60" y="225" width="6" height="6" fill="#f59e0b"/>
 
   <text x="20" y="255" class="small">
-    BASHABOT v1.0 // AI LAB ONLINE
+    BOODA v1.0 // AI LAB ONLINE
   </text>
 </svg>`;
 
   res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+
   res.setHeader(
     "Cache-Control",
     "no-store, no-cache, must-revalidate, max-age=0"
   );
+
   res.setHeader("CDN-Cache-Control", "no-store");
   res.setHeader("Vercel-CDN-Cache-Control", "no-store");
 
