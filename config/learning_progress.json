@@ -1,0 +1,25 @@
+{
+  "title": "BOODA Learning Journey",
+  "skills": [
+    {
+      "name": "AI & Machine Learning",
+      "status": "Building"
+    },
+    {
+      "name": "Generative AI & RAG",
+      "status": "Building"
+    },
+    {
+      "name": "Agentic AI",
+      "status": "Learning"
+    },
+    {
+      "name": "Data Science & Analytics",
+      "status": "Building"
+    },
+    {
+      "name": "Data Engineering & Deployment",
+      "status": "Learning"
+    }
+  ]
+}
