@@ -4,7 +4,6 @@ from datetime import date, timedelta
 from html.parser import HTMLParser
 from urllib.request import Request, urlopen
 from pathlib import Path
-import xml.sax.saxutils as xml
 
 USERNAME = "Seleem488"
 TODAY = date.today()
@@ -21,20 +20,23 @@ LEVEL_COLORS = ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353"]
 
 
 class ContributionParser(HTMLParser):
+    """Read contribution date/level pairs regardless of GitHub's wrapper tag."""
+
     def __init__(self):
         super().__init__()
         self.levels = {}
 
     def handle_starttag(self, tag, attrs):
-        if tag != "rect":
-            return
+        # GitHub has used both <rect> and <td>/<div>-based calendar markup.
+        # The meaningful contract is the data-date + data-level attributes,
+        # not the particular HTML element carrying them.
         attrs = dict(attrs)
         day = attrs.get("data-date")
         level = attrs.get("data-level")
         if day and level is not None:
             try:
                 self.levels[date.fromisoformat(day)] = max(0, min(4, int(level)))
-            except ValueError:
+            except (ValueError, TypeError):
                 pass
 
 
@@ -49,7 +51,10 @@ def fetch_contributions():
     parser = ContributionParser()
     parser.feed(page)
     if not parser.levels:
-        raise RuntimeError("GitHub returned no contribution cells; refusing to publish an empty graph.")
+        raise RuntimeError(
+            "GitHub returned no contribution date/level pairs; "
+            "the contribution calendar markup may have changed."
+        )
     return parser.levels
 
 
@@ -83,23 +88,22 @@ def svg_document(levels):
             )
     parts.append('</g>')
 
-    # Serpentine route: travel down one week, then up the next, following the calendar cells.
+    # Serpentine route: travel down one week, then up the next.
     points = []
     for col in range(WEEKS):
         rows = range(DAYS) if col % 2 == 0 else range(DAYS - 1, -1, -1)
         for row in rows:
             day = GRID_START + timedelta(days=col * 7 + row)
-            if day > TODAY:
-                continue
-            points.append((LEFT + col * STEP + CELL / 2, TOP + row * STEP + CELL / 2))
+            if day <= TODAY:
+                points.append((LEFT + col * STEP + CELL / 2, TOP + row * STEP + CELL / 2))
     if len(points) < 2:
         raise RuntimeError("Not enough contribution dates to animate the character.")
     path = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in points)
 
-    # A compact original Minion-inspired mascot, drawn directly in SVG (no external image dependency).
+    # Original Minion-inspired mascot, drawn directly in SVG.
     parts.extend([
-        f'<g transform="translate(0,0)">',
-        f'<g>',
+        '<g transform="translate(0,0)">',
+        '<g>',
         f'<animateMotion dur="72s" repeatCount="indefinite" rotate="0" path="{path}"/>',
         '<g transform="translate(-9,-16)">',
         '<g>',
