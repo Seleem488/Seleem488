@@ -1,4 +1,4 @@
-```html
+
 <div align="center">
 
 <img src="./WhatsApp%20Image%202026-10-31%20at%204.51.38%20PM.jpeg" width="100%" alt="Abdelrhman Seleem - AI Engineer" />
@@ -31,7 +31,7 @@ Building intelligent systems through data, machine learning, and modern AI techn
 <div align="center">
 
   <img
-    src="https://bashabot-lab.vercel.app/api/bashabot"
+    src="https://bashabot-lab.vercel.app/api/booda"
     width="620"
     alt="BOODA - Animated AI Lab Mascot"
   />
