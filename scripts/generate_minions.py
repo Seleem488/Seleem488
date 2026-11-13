@@ -1,19 +1,17 @@
 
 #!/usr/bin/env python3
-"""Generate a multi-year animated Minion eating banana-shaped GitHub contributions."""
+"""Generate a multi-year animated Minion eating GitHub contribution bananas."""
 
 from datetime import date, timedelta
 from html.parser import HTMLParser
 from urllib.request import Request, urlopen
 from pathlib import Path
-import calendar
 
 USERNAME = "Seleem488"
 
-# The animation starts at 2026 and travels backwards to 2023.
+# Newest year first.
 YEARS = (2026, 2025, 2024, 2023)
 
-# Each year gets 24 seconds. Total animation = 96 seconds.
 YEAR_DURATION = 24
 TOTAL_DURATION = YEAR_DURATION * len(YEARS)
 
@@ -66,7 +64,7 @@ class ContributionParser(HTMLParser):
 
 
 def fetch_contributions(year):
-    """Fetch one calendar year's contribution data."""
+    """Fetch contribution data for one calendar year."""
 
     today = date.today()
     start = date(year, 1, 1)
@@ -95,8 +93,8 @@ def fetch_contributions(year):
 
     if not parser.levels:
         raise RuntimeError(
-            f"GitHub returned no contribution data for {year}. "
-            "The contribution calendar markup may have changed."
+            f"No contribution data returned for {year}. "
+            "GitHub may have changed its calendar HTML."
         )
 
     return parser.levels
@@ -106,13 +104,14 @@ def get_grid_start(year):
     """Return the Sunday on or before January 1."""
 
     first_day = date(year, 1, 1)
+
     return first_day - timedelta(
         days=(first_day.weekday() + 1) % 7
     )
 
 
 def build_year_route(year, today):
-    """Build a vertical serpentine route for one calendar year."""
+    """Build a vertical serpentine route through one year's calendar."""
 
     grid_start = get_grid_start(year)
     year_start = date(year, 1, 1)
@@ -154,10 +153,10 @@ def build_year_route(year, today):
 
 
 def get_global_time(year_index, local_index, point_count):
-    """Convert a date's route position into global animation time."""
+    """Convert a route position into global animation time."""
 
     if point_count <= 1:
-        progress = 0
+        progress = 0.0
     else:
         progress = local_index / (point_count - 1)
 
@@ -168,20 +167,35 @@ def get_global_time(year_index, local_index, point_count):
 
 
 def visibility_animation(start_time, end_time):
-    """Show an element only during its time window in the full loop."""
+    """Show an element only during its assigned time window."""
 
-    start = max(0, min(1, start_time / TOTAL_DURATION))
-    end = max(0, min(1, end_time / TOTAL_DURATION))
+    start = max(
+        0.0,
+        min(1.0, start_time / TOTAL_DURATION)
+    )
 
-    if start <= 0:
-        values = "1;0;0"
+    end = max(
+        0.0,
+        min(1.0, end_time / TOTAL_DURATION)
+    )
+
+    if start <= 0.000001 and end >= 0.999999:
+        values = "1"
+        key_times = "0"
+
+    elif start <= 0.000001:
+        values = "1;1;0"
         key_times = f"0;{end:.6f};1"
-    elif end >= 1:
-        values = "0;1;0"
+
+    elif end >= 0.999999:
+        values = "0;1;1"
         key_times = f"0;{start:.6f};1"
+
     else:
         values = "0;1;0;0"
-        key_times = f"0;{start:.6f};{end:.6f};1"
+        key_times = (
+            f"0;{start:.6f};{end:.6f};1"
+        )
 
     return (
         '<animate attributeName="opacity" '
@@ -194,19 +208,22 @@ def visibility_animation(start_time, end_time):
 
 
 def build_chewing_animation(eat_times):
-    """Synchronize the Minion's mouth with all banana eating events."""
+    """Synchronize the Minion's mouth with banana eating."""
 
-    frames = {0.0: 0.55, TOTAL_DURATION: 0.55}
+    frames = {
+        0.0: 0.55,
+        TOTAL_DURATION: 0.55,
+    }
 
     for eat_at in eat_times:
-        open_at = max(0, eat_at)
+        open_at = max(0.0, eat_at)
         close_at = min(
             TOTAL_DURATION,
             open_at + CHEW_DURATION
         )
 
         if open_at > 0:
-            frames[max(0, open_at - 0.015)] = 0.55
+            frames[max(0.0, open_at - 0.015)] = 0.55
 
         frames[open_at] = 2.0
         frames[close_at] = 0.55
@@ -231,8 +248,8 @@ def build_chewing_animation(eat_times):
     )
 
 
-def build_month_labels(year, year_index, point_days, point_index):
-    """Create month labels that appear as the Minion reaches each month."""
+def build_month_labels(year_index, point_days, point_index):
+    """Display the current month as the Minion travels."""
 
     parts = []
 
@@ -245,41 +262,41 @@ def build_month_labels(year, year_index, point_days, point_index):
         if not month_days:
             continue
 
-        # Use the first route position in this month.
-        first_index = min(point_index[day] for day in month_days)
-
-        # The next month's first route position defines the transition.
-        if month < 12:
-            next_month_days = [
-                day for day in point_days
-                if day.month == month + 1
-            ]
-
-            if next_month_days:
-                next_index = min(
-                    point_index[day] for day in next_month_days
-                )
-            else:
-                next_index = len(point_days) - 1
-        else:
-            next_index = len(point_days) - 1
+        first_index = min(
+            point_index[day] for day in month_days
+        )
 
         start_time = get_global_time(
-            year_index, first_index, len(point_days)
+            year_index,
+            first_index,
+            len(point_days)
         )
 
-        end_time = get_global_time(
-            year_index, next_index, len(point_days)
-        )
+        next_month_days = [
+            day for day in point_days
+            if day.month == month + 1
+        ]
 
-        # Ensure the last month remains visible until the year ends.
-        if month == 12 or end_time <= start_time:
+        if next_month_days:
+            next_index = min(
+                point_index[day] for day in next_month_days
+            )
+
+            end_time = get_global_time(
+                year_index,
+                next_index,
+                len(point_days)
+            )
+        else:
+            end_time = (year_index + 1) * YEAR_DURATION
+
+        if end_time <= start_time:
             end_time = (year_index + 1) * YEAR_DURATION
 
         parts.append(
             f'<text x="{LEFT + 95}" y="18" '
-            f'font-family="Arial, sans-serif" '
-            f'font-size="11" fill="#f0f6fc" opacity="0">'
+            'font-family="Arial, sans-serif" '
+            'font-size="11" fill="#f0f6fc" opacity="0">'
             f'{MONTH_NAMES[month - 1]}'
             f'{visibility_animation(start_time, end_time)}'
             '</text>'
@@ -289,12 +306,13 @@ def build_month_labels(year, year_index, point_days, point_index):
 
 
 def draw_banana(day, level, x, y, eat_at):
-    """Draw one banana and make it disappear when eaten."""
+    """Draw a banana that disappears when the Minion reaches it."""
 
     banana_color = BANANA_COLORS[level]
 
     return (
         f'<g transform="translate({x},{y})">'
+
         f'<title>{day.isoformat()}: contribution level {level}</title>'
 
         # Banana body.
@@ -316,43 +334,46 @@ def draw_banana(day, level, x, y, eat_at):
         f'stroke="#854d0e" stroke-width="1.1" '
         f'stroke-linecap="round"/>'
 
-        # Disappear after the Minion reaches it.
+        # Disappear at the eating time and return next loop.
         f'<animate attributeName="opacity" '
         f'values="1;0;0;1" '
         f'keyTimes="0;0.004;0.996;1" '
         f'dur="{TOTAL_DURATION}s" '
         f'begin="{eat_at:.4f}s" '
-        f'repeatCount="indefinite"/>'
+        'repeatCount="indefinite"/>'
 
         '</g>'
     )
 
 
 def draw_minion(path, year_index, chewing_animation):
-    """Draw a Minion that travels along the year's contribution route."""
+    """Draw the Minion for one year's route."""
 
     offset = year_index * YEAR_DURATION
 
     parts = [
         '<g opacity="0">',
+
         visibility_animation(
             offset,
             offset + YEAR_DURATION
         ),
 
         '<g>',
+
         (
             f'<animateMotion '
             f'dur="{YEAR_DURATION}s" '
             f'begin="{offset}s" '
-            f'repeatCount="indefinite" '
-            f'rotate="0" '
+            'repeatCount="indefinite" '
+            'rotate="0" '
             f'path="{path}"/>'
         ),
 
         '<g transform="translate(-9,-16)">',
 
         '<g>',
+
         (
             '<animateTransform '
             'attributeName="transform" '
@@ -425,14 +446,13 @@ def draw_minion(path, year_index, chewing_animation):
 
 
 def svg_document(year_data):
-    """Build the complete four-year animated SVG."""
+    """Build the complete multi-year SVG."""
 
     today = date.today()
 
     prepared = []
     all_eat_times = []
 
-    # Prepare all years and collect global eating times.
     for year_index, year in enumerate(YEARS):
         levels = year_data[year]
 
@@ -444,7 +464,7 @@ def svg_document(year_data):
             path
         ) = build_year_route(year, today)
 
-        prepared.append({
+        item = {
             "year": year,
             "year_index": year_index,
             "levels": levels,
@@ -453,10 +473,15 @@ def svg_document(year_data):
             "point_days": point_days,
             "point_index": point_index,
             "path": path,
-        })
+        }
+
+        prepared.append(item)
 
         for day in point_days:
             if levels.get(day, 0) <= 0:
+                continue
+
+            if point_index[day] == len(points) - 1:
                 continue
 
             eat_at = get_global_time(
@@ -465,18 +490,13 @@ def svg_document(year_data):
                 len(points)
             )
 
-            # Skip the last route point because it coincides
-            # with the transition to the next year.
-            if point_index[day] == len(points) - 1:
-                continue
-
             all_eat_times.append(eat_at)
 
     chewing_animation = build_chewing_animation(all_eat_times)
 
     parts = [
         (
-            f'<svg xmlns="http://www.w3.org/2000/svg" '
+            '<svg xmlns="http://www.w3.org/2000/svg" '
             f'width="{WIDTH}" height="{HEIGHT}" '
             f'viewBox="0 0 {WIDTH} {HEIGHT}" role="img">'
         ),
@@ -508,8 +528,7 @@ def svg_document(year_data):
     )
     parts.append('</g>')
 
-    # Draw each year's calendar in the same position.
-    # Only one calendar is visible at a time.
+    # Each year's calendar is rendered in the same position.
     for item in prepared:
         year = item["year"]
         year_index = item["year_index"]
@@ -529,25 +548,25 @@ def svg_document(year_data):
             )
         )
 
-        # Year title.
+        # Current year title.
         parts.append(
             f'<text x="{LEFT}" y="18" '
-            f'font-family="Arial, sans-serif" '
-            f'font-size="13" font-weight="bold" '
-            f'fill="#f0f6fc">{year}</text>'
+            'font-family="Arial, sans-serif" '
+            'font-size="13" font-weight="bold" '
+            'fill="#f0f6fc">'
+            f'{year}</text>'
         )
 
-        # Month label changes as the Minion moves.
+        # Current month label.
         parts.extend(
             build_month_labels(
-                year,
                 year_index,
                 point_days,
                 point_index
             )
         )
 
-        # Draw the calendar.
+        # Calendar cells and bananas.
         parts.append('<g shape-rendering="geometricPrecision">')
 
         for col in range(WEEKS):
@@ -590,7 +609,7 @@ def svg_document(year_data):
 
         parts.append('</g>')
 
-        # Minion for this year's route.
+        # Minion for this year.
         parts.append(
             draw_minion(
                 path,
@@ -607,7 +626,7 @@ def svg_document(year_data):
 
 
 def main():
-    print(f"Fetching GitHub contributions for {USERNAME}...")
+    print(f"Fetching contributions for {USERNAME}...")
 
     year_data = {}
 
@@ -616,14 +635,14 @@ def main():
 
         year_data[year] = fetch_contributions(year)
 
-        count = sum(
+        banana_count = sum(
             1 for level in year_data[year].values()
             if level > 0
         )
 
         print(
             f"  {year}: {len(year_data[year])} dates, "
-            f"{count} contribution days."
+            f"{banana_count} bananas."
         )
 
     output = Path("dist/minions-contribution.svg")
@@ -645,7 +664,7 @@ def main():
     print(f"Generated: {output}")
     print(f"Years: {YEARS[0]} -> {YEARS[-1]}")
     print(f"Total bananas: {total_bananas}")
-    print(f"Full animation duration: {TOTAL_DURATION} seconds.")
+    print(f"Animation duration: {TOTAL_DURATION} seconds.")
 
 
 if __name__ == "__main__":
