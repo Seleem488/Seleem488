@@ -1,5 +1,4 @@
-
-
+ 
 <div align="center">
 
 <img src="./WhatsApp%20Image%202026-10-31%20at%204.51.38%20PM.jpeg" width="100%" alt="Abdelrhman Seleem - AI Engineer" />
@@ -291,6 +290,20 @@ alt="Top Languages"/>
 <img width="90%"
 src="https://streak-stats.demolab.com?user=Seleem488&theme=tokyonight&hide_border=true"
 alt="GitHub Streak"/>
+
+<br/>
+
+### Contribution Activity
+
+<picture>
+  <source media="(prefers-color-scheme: dark)"
+    srcset="https://raw.githubusercontent.com/Seleem488/Seleem488/output/github-snake-dark.svg">
+  <source media="(prefers-color-scheme: light)"
+    srcset="https://raw.githubusercontent.com/Seleem488/Seleem488/output/github-snake.svg">
+  <img alt="GitHub Contribution Snake"
+    src="https://raw.githubusercontent.com/Seleem488/Seleem488/output/github-snake.svg"
+    width="100%">
+</picture>
 
 </div>
 
