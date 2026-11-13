@@ -27,9 +27,11 @@ Building intelligent systems through data, machine learning, and modern AI techn
 
 <br/>
 
-<img src="./assets/robot.svg" width="180" alt="BashaBot - My AI Lab Mascot"/>
+<img src="https://raw.githubusercontent.com/Seleem488/Seleem488/main/assets/robot.svg?v=3" width="180" alt="BashaBot - My AI Lab Mascot"/>
 
+<!-- BASHABOT_DAILY_MESSAGE_START -->
 <h3>Hey! Welcome to my Lab 🤖</h3>
+<!-- BASHABOT_DAILY_MESSAGE_END -->
 
 <sub>Exploring AI, building intelligent systems, and turning ideas into reality.</sub>
 
