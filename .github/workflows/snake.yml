@@ -1,13 +1,15 @@
-
-name: Generate Snake Animation
+name: Generate Minions Contribution Animation
 
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "17 0 * * *"
   workflow_dispatch:
   push:
     branches:
       - main
+    paths:
+      - "scripts/generate_minions.py"
+      - ".github/workflows/snake.yml"
 
 permissions:
   contents: write
@@ -16,15 +18,18 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
-      - name: Generate Snake
-        uses: Platane/snk@v3
-        with:
-          github_user_name: Seleem488
-          outputs: |
-            dist/github-snake.svg
-            dist/github-snake-dark.svg?palette=github-dark
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-      - name: Publish Snake
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Generate animated contribution graph
+        run: python scripts/generate_minions.py
+
+      - name: Publish animation to output branch
         uses: crazy-max/ghaction-github-pages@v3.1.0
         with:
           target_branch: output
