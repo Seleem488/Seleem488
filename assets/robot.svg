@@ -1,0 +1,53 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" shape-rendering="crispEdges">
+  <!-- Left depth -->
+  <path d="M64 112 L96 80 L96 240 L64 272 Z" fill="#B94E20"/>
+  <path d="M64 112 L96 80 L128 80 L96 112 Z" fill="#FFD08A"/>
+
+  <!-- Main square body -->
+  <path d="M96 80 H224 L256 112 V240 L224 272 H96 L64 240 V112 Z"
+        fill="#F28B3D"/>
+
+  <!-- Top surface -->
+  <path d="M96 80 H224 L256 112 H96 L64 112 Z" fill="#FFC078"/>
+
+  <!-- Right depth -->
+  <path d="M224 80 L256 112 V240 L224 272 Z" fill="#C45A26"/>
+
+  <!-- Front face -->
+  <path d="M96 112 H224 V240 H96 L64 208 V144 Z" fill="#F49A4D"/>
+
+  <!-- Pixel highlights -->
+  <rect x="96" y="112" width="32" height="32" fill="#FFB66D"/>
+  <rect x="128" y="112" width="32" height="32" fill="#F9A65B"/>
+  <rect x="160" y="112" width="32" height="32" fill="#F49A4D"/>
+  <rect x="192" y="112" width="32" height="32" fill="#E9843C"/>
+
+  <rect x="64" y="144" width="32" height="32" fill="#E9823C"/>
+  <rect x="64" y="176" width="32" height="32" fill="#D96B2D"/>
+  <rect x="96" y="208" width="32" height="32" fill="#E9843C"/>
+  <rect x="128" y="208" width="32" height="32" fill="#F7A45C"/>
+  <rect x="160" y="208" width="32" height="32" fill="#F49A4D"/>
+  <rect x="192" y="208" width="32" height="32" fill="#E47A34"/>
+
+  <!-- Face -->
+  <rect x="119" y="157" width="16" height="24" fill="#572F21"/>
+  <rect x="185" y="157" width="16" height="24" fill="#572F21"/>
+
+  <!-- Eye highlights -->
+  <rect x="119" y="157" width="6" height="6" fill="#FFE1B7"/>
+  <rect x="185" y="157" width="6" height="6" fill="#FFE1B7"/>
+
+  <!-- Cheeky smile -->
+  <path d="M143 190 H151 V198 H175 V190 H183 V206 H167 V214 H151 V206 H143 Z"
+        fill="#572F21"/>
+
+  <!-- Small pixel cheeks -->
+  <rect x="104" y="185" width="8" height="8" fill="#FFD09A"/>
+  <rect x="208" y="185" width="8" height="8" fill="#D96B2D"/>
+
+  <!-- Tiny pixel accents -->
+  <rect x="240" y="64" width="16" height="16" fill="#F49A4D"/>
+  <rect x="256" y="48" width="8" height="8" fill="#FFC078"/>
+  <rect x="48" y="96" width="8" height="8" fill="#F49A4D"/>
+</svg>
