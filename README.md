@@ -1,4 +1,4 @@
-
+```html
 <div align="center">
 
 <img src="./WhatsApp%20Image%202026-10-31%20at%204.51.38%20PM.jpeg" width="100%" alt="Abdelrhman Seleem - AI Engineer" />
@@ -33,7 +33,7 @@ Building intelligent systems through data, machine learning, and modern AI techn
   <img
     src="https://bashabot-lab.vercel.app/api/bashabot"
     width="620"
-    alt="BashaBot - Animated AI Lab Mascot"
+    alt="BOODA - Animated AI Lab Mascot"
   />
 
 </div>
@@ -362,3 +362,4 @@ I'm always open to connecting with people interested in AI, Machine Learning, Da
 *Learning through building, exploring through experimentation, and connecting data with intelligent systems.*
 
 </div>
+```
