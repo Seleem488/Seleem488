@@ -295,15 +295,10 @@ alt="GitHub Streak"/>
 
 ### Contribution Activity
 
-<picture>
-  <source media="(prefers-color-scheme: dark)"
-    srcset="https://raw.githubusercontent.com/Seleem488/Seleem488/output/github-snake-dark.svg">
-  <source media="(prefers-color-scheme: light)"
-    srcset="https://raw.githubusercontent.com/Seleem488/Seleem488/output/github-snake.svg">
-  <img alt="GitHub Contribution Snake"
-    src="https://raw.githubusercontent.com/Seleem488/Seleem488/output/github-snake.svg"
-    width="100%">
-</picture>
+<img
+  src="https://raw.githubusercontent.com/Seleem488/Seleem488/output/minions-contribution.svg"
+  alt="Animated Minions travelling across my GitHub contribution activity"
+  width="100%">
 
 </div>
 
