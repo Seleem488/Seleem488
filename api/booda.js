@@ -1,4 +1,3 @@
-
 const personalities = {
   WELCOME: [
     "Hey Human! Welcome to my Lab!",
@@ -89,6 +88,30 @@ const stateToPersonality = {
   WELCOME: "WELCOME"
 };
 
+// ---------------------------------------------------------------
+// NEW: character outfits.
+// Each state now has its own look. You can also force one with
+// ?outfit=JACKET | HOODIE | HOOD | BEANIE | LAB | ORANGE
+// ---------------------------------------------------------------
+const validOutfits = [
+  "JACKET",
+  "HOODIE",
+  "HOOD",
+  "BEANIE",
+  "LAB",
+  "ORANGE"
+];
+
+const stateToOutfit = {
+  IDLE: "JACKET",
+  SLEEPING: "JACKET",
+  WELCOME: "HOODIE",
+  CODING: "BEANIE",
+  THINKING: "LAB",
+  DEBUGGING: "HOOD",
+  CELEBRATING: "ORANGE"
+};
+
 const COLORS = {
   outline: "#101116",
   hair: "#15110f",
@@ -105,7 +128,24 @@ const COLORS = {
   blanket: "#344b68",
   blanketLight: "#526b8b",
   blanketDark: "#26384f",
-  pillow: "#d8dce2"
+  pillow: "#d8dce2",
+
+  // New outfit colors
+  jeans: "#2f4f8f",
+  hoodie: "#1f2433",
+  hoodieDark: "#161a26",
+  hoodGray: "#3a3f4b",
+  hoodBody: "#2a303c",
+  hoodBodyDark: "#1c212b",
+  string: "#e8e8ec",
+  blue: "#2b4a8a",
+  blueDark: "#203868",
+  orange: "#f29a1a",
+  orangeDark: "#c97a10",
+  coat: "#f1f1f4",
+  coatDark: "#1f2433",
+  red: "#dd3333",
+  shades: "#16161a"
 };
 
 function pick(items) {
@@ -188,6 +228,14 @@ function getPersonality(requestedMode, requestedState) {
   };
 }
 
+function getOutfit(requestedOutfit, state) {
+  const outfit = String(requestedOutfit || "").toUpperCase();
+
+  if (validOutfits.includes(outfit)) return outfit;
+
+  return stateToOutfit[state] || "JACKET";
+}
+
 function wrapMessage(message, maxLength = 39, maxLines = 3) {
   const words = String(message)
     .replace(/[\u0000-\u001F\u007F]/g, " ")
@@ -245,9 +293,125 @@ function pixel(x, y, w, h, color) {
   `;
 }
 
-// Original 16x24 pixel-art character.
-function getStandingCharacter(state) {
+// ---------------------------------------------------------------
+// NEW: outfit definitions.
+// main/dark  -> torso + sleeves colors
+// pants      -> pants color
+// detail     -> extra pixels drawn on the torso
+// headBase   -> optional replacement for the default head
+// hair       -> optional replacement for the default hair
+// eyewear    -> optional pixels drawn on top of the face
+// ---------------------------------------------------------------
+function getOutfitStyle(outfit) {
   const c = COLORS;
+
+  switch (outfit) {
+    case "HOODIE":
+      return {
+        main: c.hoodie,
+        dark: c.hoodieDark,
+        pants: c.jeans,
+        detail: `
+          ${pixel(6, 13, 3, 1, c.hoodieDark)}
+          ${pixel(6, 14, 1, 2, c.string)}
+          ${pixel(9, 14, 1, 2, c.string)}
+          ${pixel(5, 16, 7, 1, c.hoodieDark)}
+        `
+      };
+
+    case "HOOD":
+      return {
+        main: c.hoodBody,
+        dark: c.hoodBodyDark,
+        pants: c.jeans,
+        detail: `
+          ${pixel(6, 13, 3, 1, c.hoodBodyDark)}
+          ${pixel(6, 14, 1, 2, c.cyan)}
+          ${pixel(9, 14, 1, 2, c.cyan)}
+          ${pixel(5, 16, 7, 1, c.hoodBodyDark)}
+        `,
+        headBase: `
+          ${pixel(2, 2, 12, 10, c.outline)}
+          ${pixel(3, 3, 10, 9, c.hoodGray)}
+          ${pixel(4, 5, 8, 6, c.skin)}
+        `,
+        hair: ""
+      };
+
+    case "BEANIE":
+      return {
+        main: c.blue,
+        dark: c.blueDark,
+        pants: c.hoodie,
+        detail: `
+          ${pixel(6, 13, 3, 1, c.blueDark)}
+          ${pixel(6, 14, 1, 2, c.string)}
+          ${pixel(9, 14, 1, 2, c.string)}
+          ${pixel(5, 16, 7, 1, c.blueDark)}
+        `,
+        hair: `
+          ${pixel(3, 1, 10, 4, c.outline)}
+          ${pixel(4, 2, 8, 3, c.orange)}
+          ${pixel(4, 4, 8, 1, c.orangeDark)}
+          ${pixel(7, 0, 2, 1, c.white)}
+          ${pixel(2, 5, 2, 5, c.outline)}
+          ${pixel(2, 6, 1, 3, c.cyan)}
+          ${pixel(13, 5, 2, 5, c.outline)}
+          ${pixel(14, 6, 1, 3, c.cyan)}
+        `
+      };
+
+    case "LAB":
+      return {
+        main: c.coat,
+        dark: c.coatDark,
+        pants: c.jeans,
+        detail: `
+          ${pixel(7, 13, 2, 5, c.coatDark)}
+          ${pixel(5, 14, 1, 1, c.red)}
+          ${pixel(10, 15, 1, 1, c.cyan)}
+        `
+      };
+
+    case "ORANGE":
+      return {
+        main: c.orange,
+        dark: c.orangeDark,
+        pants: c.jeans,
+        detail: `
+          ${pixel(6, 13, 3, 1, c.orangeDark)}
+          ${pixel(6, 14, 1, 2, c.string)}
+          ${pixel(9, 14, 1, 2, c.string)}
+          ${pixel(5, 16, 7, 1, c.orangeDark)}
+        `,
+        eyewear: `
+          ${pixel(4, 8, 4, 2, c.shades)}
+          ${pixel(9, 8, 4, 2, c.shades)}
+          ${pixel(8, 8, 1, 1, c.shades)}
+          ${pixel(5, 8, 1, 1, "#3a3a46")}
+          ${pixel(10, 8, 1, 1, "#3a3a46")}
+        `
+      };
+
+    case "JACKET":
+    default:
+      return {
+        main: c.jacket,
+        dark: c.jacketDark,
+        pants: c.pants,
+        detail: `
+          ${pixel(7, 13, 1, 5, c.zipper)}
+          ${pixel(5, 15, 2, 1, c.jacketDark)}
+          ${pixel(10, 15, 2, 1, c.jacketDark)}
+        `
+      };
+  }
+}
+
+// Original 16x24 pixel-art character, now with outfits.
+function getStandingCharacter(state, outfit) {
+  const c = COLORS;
+  const o = getOutfitStyle(outfit);
 
   let face = `
     ${pixel(5, 8, 2, 2, c.outline)}
@@ -327,7 +491,7 @@ function getStandingCharacter(state) {
     `;
   }
 
-  const hair = `
+  const defaultHair = `
     ${pixel(3, 3, 10, 2, c.outline)}
     ${pixel(4, 2, 8, 2, c.hair)}
     ${pixel(3, 3, 2, 2, c.hair)}
@@ -336,30 +500,43 @@ function getStandingCharacter(state) {
     ${pixel(11, 2, 2, 2, c.hair)}
   `;
 
-  const head = `
+  const defaultHead = `
     ${pixel(3, 4, 10, 8, c.outline)}
     ${pixel(4, 4, 8, 7, c.skin)}
     ${pixel(3, 6, 1, 3, c.skin)}
     ${pixel(12, 6, 1, 3, c.skin)}
+  `;
+
+  const hair = o.hair !== undefined ? o.hair : defaultHair;
+  const headBase = o.headBase || defaultHead;
+  const eyewear = o.eyewear || "";
+
+  // Orange outfit: big white smile under the sunglasses.
+  const teeth = outfit === "ORANGE"
+    ? pixel(8, 12, 3, 1, c.white)
+    : "";
+
+  const head = `
+    ${headBase}
     ${hair}
     ${face}
+    ${eyewear}
+    ${teeth}
   `;
 
   const body = `
     ${pixel(4, 13, 9, 6, c.outline)}
-    ${pixel(5, 13, 7, 5, c.jacket)}
-    ${pixel(7, 13, 1, 5, c.zipper)}
-    ${pixel(5, 15, 2, 1, c.jacketDark)}
-    ${pixel(10, 15, 2, 1, c.jacketDark)}
+    ${pixel(5, 13, 7, 5, o.main)}
+    ${o.detail}
     ${pixel(3, 14, 2, 4, c.outline)}
-    ${pixel(3, 14, 1, 3, c.jacket)}
+    ${pixel(3, 14, 1, 3, o.main)}
     ${pixel(12, 14, 2, 4, c.outline)}
-    ${pixel(13, 14, 1, 3, c.jacket)}
+    ${pixel(13, 14, 1, 3, o.main)}
     ${pixel(3, 18, 1, 1, c.skin)}
     ${pixel(13, 18, 1, 1, c.skin)}
     ${pixel(5, 18, 7, 4, c.outline)}
-    ${pixel(6, 18, 2, 3, c.pants)}
-    ${pixel(9, 18, 2, 3, c.pants)}
+    ${pixel(6, 18, 2, 3, o.pants)}
+    ${pixel(9, 18, 2, 3, o.pants)}
     ${pixel(5, 21, 3, 2, c.outline)}
     ${pixel(9, 21, 3, 2, c.outline)}
     ${pixel(4, 22, 4, 2, c.shoes)}
@@ -371,7 +548,7 @@ function getStandingCharacter(state) {
   if (state === "CODING") {
     action = `
       ${pixel(1, 16, 4, 1, c.outline)}
-      ${pixel(1, 15, 4, 1, c.jacket)}
+      ${pixel(1, 15, 4, 1, o.main)}
       ${pixel(12, 16, 3, 1, c.outline)}
       ${pixel(13, 15, 2, 1, c.skin)}
       ${pixel(5, 17, 7, 1, c.cyan)}
@@ -387,6 +564,14 @@ function getStandingCharacter(state) {
       ${pixel(14, 9, 1, 3, c.skin)}
       ${pixel(1, 8, 1, 1, c.cyan)}
       ${pixel(14, 8, 1, 1, c.cyan)}
+    `;
+  }
+
+  // NEW: welcome wave with the right hand.
+  if (state === "WELCOME") {
+    action = `
+      ${pixel(13, 10, 2, 3, c.outline)}
+      ${pixel(14, 9, 1, 3, c.skin)}
     `;
   }
 
@@ -547,7 +732,7 @@ function getStateEffects(state) {
   }
 }
 
-function createSvg(message, mode, greeting, state) {
+function createSvg(message, mode, greeting, state, outfit) {
   const lines = wrapMessage(message);
 
   const messageLines = lines.map((line, index) =>
@@ -562,7 +747,7 @@ function createSvg(message, mode, greeting, state) {
 
   const character = sleeping
     ? getSleepingCharacter()
-    : getStandingCharacter(state);
+    : getStandingCharacter(state, outfit);
 
   const characterTransform = sleeping
     ? "translate(532 92) scale(8)"
@@ -577,7 +762,7 @@ function createSvg(message, mode, greeting, state) {
   aria-labelledby="title desc">
 
   <title id="title">BOODA - Pixel Art AI Mascot</title>
-  <desc id="desc">Booda, an original bearded pixel-art AI engineer. In idle mode he sleeps under a blanket.</desc>
+  <desc id="desc">Booda, an original bearded pixel-art AI engineer with a different outfit for each state. In idle mode he sleeps under a blanket.</desc>
 
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
@@ -777,6 +962,8 @@ export default function handler(req, res) {
     req.query?.state
   );
 
+  const outfit = getOutfit(req.query?.outfit, state);
+
   const customMessage = req.query?.message;
 
   const finalMessage =
@@ -792,7 +979,8 @@ export default function handler(req, res) {
     finalMessage,
     mode,
     getGreeting(),
-    state
+    state,
+    outfit
   );
 
   res.setHeader(
