@@ -435,7 +435,7 @@ function getOutfitStyle(outfit) {
 }
 
 // ---------------------------------------------------------------
-// Standing character - corrected facial layout
+// Standing character
 // ---------------------------------------------------------------
 
 function getStandingCharacter(state, outfit) {
@@ -455,26 +455,17 @@ function getStandingCharacter(state, outfit) {
   const sleeping =
     state === "IDLE" || state === "SLEEPING";
 
-  // -----------------------------------------------------------
   // Legs and shoes
-  // -----------------------------------------------------------
-
   g.put(5, 19, 2, 3, o.pants);
   g.put(9, 19, 2, 3, o.pants);
 
   g.put(4, 22, 3, 2, c.shoes);
   g.put(9, 22, 3, 2, c.shoes);
 
-  // -----------------------------------------------------------
   // Torso
-  // -----------------------------------------------------------
-
   g.put(4, 12, 8, 7, o.main);
 
-  // -----------------------------------------------------------
   // Arms
-  // -----------------------------------------------------------
-
   const leftUp = pose === "both-up";
   const rightUp = pose === "both-up" || pose === "right-up";
 
@@ -505,10 +496,7 @@ function getStandingCharacter(state, outfit) {
   if (!leftUp) g.put(4, 13, 1, 5, o.seam);
   if (!rightUp) g.put(11, 13, 1, 5, o.seam);
 
-  // -----------------------------------------------------------
   // Outfit details
-  // -----------------------------------------------------------
-
   o.torso(g);
 
   if (pose === "coding") {
@@ -516,59 +504,40 @@ function getStandingCharacter(state, outfit) {
     g.put(4, 16, 8, 1, c.laptop);
   }
 
-  // -----------------------------------------------------------
   // Hood behind the head
-  // -----------------------------------------------------------
-
   if (o.hood) {
     g.put(3, 2, 10, 1, c.hoodGray);
     g.put(2, 3, 12, 9, c.hoodGray);
   }
 
-  // -----------------------------------------------------------
   // Head, neck and ears
-  // -----------------------------------------------------------
-
-  // Neck
   g.put(6, 11, 4, 3, c.skinShade);
   g.put(7, 11, 2, 2, c.skin);
 
-  // Face base
   g.put(5, 4, 6, 2, c.skin);
   g.put(4, 6, 8, 4, c.skin);
   g.put(5, 10, 6, 2, c.skin);
 
-  // Ears
   g.put(3, 6, 1, 2, c.skinShade);
   g.put(12, 6, 1, 2, c.skinShade);
 
   g.put(3, 6, 1, 1, c.skin);
   g.put(12, 6, 1, 1, c.skin);
 
-  // -----------------------------------------------------------
   // Beard and moustache
-  // -----------------------------------------------------------
-
-  // Sideburns
   g.put(4, 8, 1, 3, c.beard);
   g.put(11, 8, 1, 3, c.beard);
 
-  // Cheek beard
   g.put(5, 10, 2, 2, c.beard);
   g.put(9, 10, 2, 2, c.beard);
 
-  // Chin beard
   g.put(6, 12, 4, 1, c.beard);
   g.put(7, 13, 2, 1, c.beard);
 
-  // Moustache
   g.put(6, 9, 2, 1, c.beard);
   g.put(8, 9, 2, 1, c.beard);
 
-  // -----------------------------------------------------------
   // Hair and headwear
-  // -----------------------------------------------------------
-
   if (o.beanie) {
     g.put(3, 2, 10, 3, c.orange);
     g.put(3, 4, 10, 1, c.orangeDark);
@@ -588,10 +557,7 @@ function getStandingCharacter(state, outfit) {
     g.put(8, 1, 2, 1, c.hair);
   }
 
-  // -----------------------------------------------------------
   // Eyebrows
-  // -----------------------------------------------------------
-
   if (state === "THINKING") {
     g.put(5, 5, 2, 1, c.hair);
     g.put(9, 4, 2, 1, c.hair);
@@ -603,34 +569,23 @@ function getStandingCharacter(state, outfit) {
     g.put(9, 5, 2, 1, c.hair);
   }
 
-  // -----------------------------------------------------------
-  // Eyes - aligned symmetrically
-  // -----------------------------------------------------------
-
+  // Eyes
   if (sleeping) {
     g.put(5, 7, 2, 1, c.outline);
     g.put(9, 7, 2, 1, c.outline);
   } else {
-    // Left eye
     g.put(5, 7, 2, 1, c.white);
     g.put(6, 7, 1, 1, c.outline);
 
-    // Right eye
     g.put(9, 7, 2, 1, c.white);
     g.put(9, 7, 1, 1, c.outline);
   }
 
-  // -----------------------------------------------------------
-  // Nose - centered
-  // -----------------------------------------------------------
-
+  // Nose
   g.put(7, 8, 2, 1, c.skinShade);
   g.put(8, 8, 1, 1, c.skin);
 
-  // -----------------------------------------------------------
-  // Mouth - below the nose
-  // -----------------------------------------------------------
-
+  // Mouth
   if (bigSmile) {
     g.put(7, 10, 2, 1, c.mouthDark);
     g.put(7, 10, 2, 1, c.white);
@@ -639,10 +594,7 @@ function getStandingCharacter(state, outfit) {
     g.put(7, 10, 2, 1, c.mouth);
   }
 
-  // -----------------------------------------------------------
   // Sunglasses
-  // -----------------------------------------------------------
-
   if (o.shades) {
     g.put(4, 6, 3, 2, c.shades);
     g.put(9, 6, 3, 2, c.shades);
@@ -817,6 +769,17 @@ function createSvg(message, mode, greeting, state, outfit) {
     ? "translate(530 82) scale(8)"
     : "translate(558 40) scale(9)";
 
+  // States that use the new side-to-side movement
+  const walkingStates = [
+    "WELCOME",
+    "CODING",
+    "THINKING",
+    "DEBUGGING",
+    "CELEBRATING"
+  ];
+
+  const isWalking = walkingStates.includes(state);
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
   width="760"
@@ -852,6 +815,44 @@ function createSvg(message, mode, greeting, state, outfit) {
         transform-origin: center;
         will-change: transform;
       }
+
+      /* --------------------------------------------------
+         NEW: Side-to-side character movement
+      -------------------------------------------------- */
+
+      .character-walk {
+        transform-box: fill-box;
+        transform-origin: center bottom;
+        will-change: transform;
+      }
+
+      .state-WELCOME .character-walk,
+      .state-CODING .character-walk,
+      .state-THINKING .character-walk,
+      .state-DEBUGGING .character-walk,
+      .state-CELEBRATING .character-walk {
+        animation: walkSideToSide 5s ease-in-out infinite;
+      }
+
+      @keyframes walkSideToSide {
+        0%, 100% {
+          transform: translateX(-22px) rotate(-1deg);
+        }
+
+        25% {
+          transform: translateX(22px) rotate(1deg);
+        }
+
+        50% {
+          transform: translateX(22px) rotate(1deg);
+        }
+
+        75% {
+          transform: translateX(-22px) rotate(-1deg);
+        }
+      }
+
+      /* Existing character animations */
 
       .state-IDLE .character-motion,
       .state-SLEEPING .character-motion {
@@ -993,8 +994,10 @@ function createSvg(message, mode, greeting, state, outfit) {
   <!-- Character -->
   <g class="state-${safeState}">
     <g class="character-position" transform="${characterTransform}">
-      <g class="character-motion">
-        ${character}
+      <g class="${isWalking ? "character-walk" : ""}">
+        <g class="character-motion">
+          ${character}
+        </g>
       </g>
     </g>
   </g>
