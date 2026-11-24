@@ -1,4 +1,3 @@
-
 const personalities = {
   WELCOME: [
     "Hey Human! Welcome to my Lab!",
@@ -97,8 +96,10 @@ const COLORS = {
   outline: "#101116",
   hair: "#15110f",
   skin: "#e0a878",
+  skinShade: "#c99266",
   beard: "#15110f",
   mouth: "#a0524a",
+  mouthDark: "#7a1f1f",
   jacket: "#3d4244",
   jacketDark: "#292e30",
   zipper: "#b8c0c2",
@@ -123,8 +124,11 @@ const COLORS = {
   orangeDark: "#c97a10",
   coat: "#f1f1f4",
   coatDark: "#1f2433",
+  coatSeam: "#d3d6dd",
   red: "#dd3333",
-  shades: "#16161a"
+  shades: "#16161a",
+  shine: "#3a3a46",
+  laptop: "#cfd2d8"
 };
 
 function pick(items) {
@@ -248,11 +252,91 @@ function wrapMessage(message, maxLength = 39, maxLines = 3) {
 }
 
 // ---------------------------------------------------------------
-// Pixel helper
+// Pixel helper (used by the sleeping scene)
 // ---------------------------------------------------------------
 
 function pixel(x, y, w, h, color) {
   return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${color}"/>`;
+}
+
+// ---------------------------------------------------------------
+// Pixel grid
+//
+// The standing character is painted onto a real pixel grid
+// (columns 0-15, rows 0-24). Layers are painted back to front,
+// then the dark outline is generated automatically around the
+// whole silhouette. Nothing can drift out of place anymore,
+// because every part is placed on the same grid.
+// ---------------------------------------------------------------
+
+class PixelGrid {
+  constructor(width, height) {
+    this.width = width;
+    this.height = height;
+    this.cells = Array.from(
+      { length: height },
+      () => Array(width).fill(null)
+    );
+  }
+
+  put(x, y, w, h, color) {
+    for (let yy = y; yy < y + h; yy++) {
+      for (let xx = x; xx < x + w; xx++) {
+        if (
+          xx >= 0 && yy >= 0 &&
+          xx < this.width && yy < this.height
+        ) {
+          this.cells[yy][xx] = color;
+        }
+      }
+    }
+  }
+
+  toSvg(outlineColor) {
+    const out = this.cells.map(row => row.slice());
+
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        if (this.cells[y][x]) continue;
+
+        const touching = [
+          [x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]
+        ].some(([nx, ny]) =>
+          nx >= 0 && ny >= 0 &&
+          nx < this.width && ny < this.height &&
+          this.cells[ny][nx]
+        );
+
+        if (touching) out[y][x] = outlineColor;
+      }
+    }
+
+    let svg = "";
+
+    for (let y = 0; y < this.height; y++) {
+      let x = 0;
+
+      while (x < this.width) {
+        const color = out[y][x];
+
+        if (!color) {
+          x++;
+          continue;
+        }
+
+        let end = x;
+
+        while (end + 1 < this.width && out[y][end + 1] === color) {
+          end++;
+        }
+
+        svg += `<rect x="${x}" y="${y}" width="${end - x + 1}" height="1" fill="${color}"/>`;
+        x = end + 1;
+      }
+    }
+
+    return svg;
+  }
 }
 
 // ---------------------------------------------------------------
@@ -267,87 +351,72 @@ function getOutfitStyle(outfit) {
       return {
         main: c.hoodie,
         dark: c.hoodieDark,
+        seam: c.hoodieDark,
         pants: c.jeans,
-        detail: `
-          ${pixel(6, 13, 3, 1, c.hoodieDark)}
-          ${pixel(6, 14, 1, 2, c.string)}
-          ${pixel(9, 14, 1, 2, c.string)}
-          ${pixel(5, 16, 7, 1, c.hoodieDark)}
-        `
+        torso(g) {
+          g.put(5, 12, 6, 1, c.hoodieDark);
+          g.put(6, 13, 1, 3, c.string);
+          g.put(9, 13, 1, 3, c.string);
+          g.put(5, 16, 6, 1, c.hoodieDark);
+        }
       };
 
     case "HOOD":
       return {
         main: c.hoodBody,
         dark: c.hoodBodyDark,
+        seam: c.hoodBodyDark,
         pants: c.jeans,
-        detail: `
-          ${pixel(6, 13, 3, 1, c.hoodBodyDark)}
-          ${pixel(6, 14, 1, 2, c.cyan)}
-          ${pixel(9, 14, 1, 2, c.cyan)}
-          ${pixel(5, 16, 7, 1, c.hoodBodyDark)}
-        `,
-        headBase: `
-          ${pixel(2, 2, 12, 10, c.outline)}
-          ${pixel(3, 3, 10, 9, c.hoodGray)}
-          ${pixel(4, 5, 8, 6, c.skin)}
-        `,
-        hair: ""
+        hood: true,
+        torso(g) {
+          g.put(5, 12, 6, 1, c.hoodBodyDark);
+          g.put(6, 13, 1, 3, c.cyan);
+          g.put(9, 13, 1, 3, c.cyan);
+          g.put(5, 16, 6, 1, c.hoodBodyDark);
+        }
       };
 
     case "BEANIE":
       return {
         main: c.blue,
         dark: c.blueDark,
+        seam: c.blueDark,
         pants: c.hoodie,
-        detail: `
-          ${pixel(6, 13, 3, 1, c.blueDark)}
-          ${pixel(6, 14, 1, 2, c.string)}
-          ${pixel(9, 14, 1, 2, c.string)}
-          ${pixel(5, 16, 7, 1, c.blueDark)}
-        `,
-        hair: `
-          ${pixel(3, 1, 10, 4, c.outline)}
-          ${pixel(4, 2, 8, 3, c.orange)}
-          ${pixel(4, 4, 8, 1, c.orangeDark)}
-          ${pixel(7, 0, 2, 1, c.white)}
-          ${pixel(2, 5, 2, 5, c.outline)}
-          ${pixel(2, 6, 1, 3, c.cyan)}
-          ${pixel(13, 5, 2, 5, c.outline)}
-          ${pixel(14, 6, 1, 3, c.cyan)}
-        `
+        beanie: true,
+        torso(g) {
+          g.put(5, 12, 6, 1, c.blueDark);
+          g.put(6, 13, 1, 3, c.string);
+          g.put(9, 13, 1, 3, c.string);
+          g.put(5, 16, 6, 1, c.blueDark);
+        }
       };
 
     case "LAB":
       return {
         main: c.coat,
         dark: c.coatDark,
+        seam: c.coatSeam,
         pants: c.jeans,
-        detail: `
-          ${pixel(7, 13, 2, 5, c.coatDark)}
-          ${pixel(5, 14, 1, 1, c.red)}
-          ${pixel(10, 15, 1, 1, c.cyan)}
-        `
+        torso(g) {
+          g.put(7, 12, 2, 7, c.coatDark);
+          g.put(5, 14, 1, 1, c.red);
+          g.put(10, 15, 1, 1, c.cyan);
+        }
       };
 
     case "ORANGE":
       return {
         main: c.orange,
         dark: c.orangeDark,
+        seam: c.orangeDark,
         pants: c.jeans,
-        detail: `
-          ${pixel(6, 13, 3, 1, c.orangeDark)}
-          ${pixel(6, 14, 1, 2, c.string)}
-          ${pixel(9, 14, 1, 2, c.string)}
-          ${pixel(5, 16, 7, 1, c.orangeDark)}
-        `,
-        eyewear: `
-          ${pixel(4, 8, 4, 2, c.shades)}
-          ${pixel(9, 8, 4, 2, c.shades)}
-          ${pixel(8, 8, 1, 1, c.shades)}
-          ${pixel(5, 8, 1, 1, "#3a3a46")}
-          ${pixel(10, 8, 1, 1, "#3a3a46")}
-        `
+        shades: true,
+        torso(g) {
+          g.put(5, 12, 6, 1, c.orangeDark);
+          g.put(6, 13, 1, 3, c.string);
+          g.put(9, 13, 1, 3, c.string);
+          g.put(5, 16, 6, 1, c.orangeDark);
+        }
       };
 
     case "JACKET":
@@ -355,12 +424,14 @@ function getOutfitStyle(outfit) {
       return {
         main: c.jacket,
         dark: c.jacketDark,
+        seam: c.jacketDark,
         pants: c.pants,
-        detail: `
-          ${pixel(7, 13, 1, 5, c.zipper)}
-          ${pixel(5, 15, 2, 1, c.jacketDark)}
-          ${pixel(10, 15, 2, 1, c.jacketDark)}
-        `
+        torso(g) {
+          g.put(5, 12, 6, 1, c.jacketDark);
+          g.put(7, 12, 2, 7, c.zipper);
+          g.put(5, 16, 2, 1, c.jacketDark);
+          g.put(9, 16, 2, 1, c.jacketDark);
+        }
       };
   }
 }
@@ -372,153 +443,160 @@ function getOutfitStyle(outfit) {
 function getStandingCharacter(state, outfit) {
   const c = COLORS;
   const o = getOutfitStyle(outfit);
+  const g = new PixelGrid(16, 25);
 
-  let face = `
-    ${pixel(5, 8, 2, 2, c.outline)}
-    ${pixel(10, 8, 2, 2, c.outline)}
-    ${pixel(5, 8, 1, 1, c.white)}
-    ${pixel(10, 8, 1, 1, c.white)}
-    ${pixel(7, 7, 2, 1, c.hair)}
-    ${pixel(10, 7, 2, 1, c.hair)}
-    ${pixel(7, 11, 3, 2, c.beard)}
-    ${pixel(10, 11, 2, 2, c.beard)}
-    ${pixel(8, 12, 2, 1, c.mouth)}
-  `;
+  // Which arm pose?
+  let pose = "down";
+  if (state === "CELEBRATING") pose = "both-up";
+  if (state === "WELCOME") pose = "right-up";
+  if (state === "CODING") pose = "coding";
 
-  if (state === "WELCOME" || state === "CELEBRATING") {
-    face = `
-      ${pixel(5, 8, 2, 2, c.outline)}
-      ${pixel(10, 8, 2, 2, c.outline)}
-      ${pixel(5, 8, 1, 1, c.white)}
-      ${pixel(10, 8, 1, 1, c.white)}
-      ${pixel(7, 7, 2, 1, c.hair)}
-      ${pixel(10, 7, 2, 1, c.hair)}
-      ${pixel(7, 11, 5, 2, c.beard)}
-      ${pixel(8, 12, 3, 1, c.mouth)}
-    `;
+  // ---- Legs and shoes
+  g.put(5, 19, 2, 3, o.pants);
+  g.put(9, 19, 2, 3, o.pants);
+  g.put(4, 22, 3, 2, c.shoes);
+  g.put(9, 22, 3, 2, c.shoes);
+
+  // ---- Torso
+  g.put(4, 12, 8, 7, o.main);
+
+  // ---- Arms
+  const leftUp = pose === "both-up";
+  const rightUp = pose === "both-up" || pose === "right-up";
+
+  if (leftUp) {
+    g.put(3, 12, 1, 2, o.main);
+    g.put(1, 10, 2, 4, o.main);
+    g.put(1, 8, 2, 2, c.skin);
+  } else if (pose === "coding") {
+    g.put(2, 13, 2, 3, o.main);
+    g.put(2, 16, 2, 1, c.skin);
+  } else {
+    g.put(2, 13, 2, 5, o.main);
+    g.put(2, 18, 2, 1, c.skin);
   }
 
-  if (state === "THINKING") {
-    face = `
-      ${pixel(5, 8, 2, 2, c.outline)}
-      ${pixel(10, 7, 2, 2, c.outline)}
-      ${pixel(5, 8, 1, 1, c.white)}
-      ${pixel(10, 7, 1, 1, c.white)}
-      ${pixel(7, 7, 2, 1, c.hair)}
-      ${pixel(10, 6, 2, 1, c.hair)}
-      ${pixel(7, 11, 3, 2, c.beard)}
-      ${pixel(10, 11, 2, 2, c.beard)}
-      ${pixel(8, 12, 2, 1, c.mouth)}
-    `;
+  if (rightUp) {
+    g.put(12, 12, 1, 2, o.main);
+    g.put(13, 10, 2, 4, o.main);
+    g.put(13, 8, 2, 2, c.skin);
+  } else if (pose === "coding") {
+    g.put(12, 13, 2, 3, o.main);
+    g.put(12, 16, 2, 1, c.skin);
+  } else {
+    g.put(12, 13, 2, 5, o.main);
+    g.put(12, 18, 2, 1, c.skin);
   }
 
-  if (state === "DEBUGGING") {
-    face = `
-      ${pixel(5, 8, 2, 2, c.outline)}
-      ${pixel(10, 8, 2, 2, c.outline)}
-      ${pixel(5, 9, 1, 1, c.white)}
-      ${pixel(10, 9, 1, 1, c.white)}
-      ${pixel(5, 7, 3, 1, c.hair)}
-      ${pixel(10, 7, 3, 1, c.hair)}
-      ${pixel(7, 11, 3, 2, c.beard)}
-      ${pixel(10, 11, 2, 2, c.beard)}
-      ${pixel(8, 12, 2, 1, c.mouth)}
-    `;
+  // Arm seams (only when the arm hangs down)
+  if (!leftUp) g.put(4, 13, 1, 5, o.seam);
+  if (!rightUp) g.put(11, 13, 1, 5, o.seam);
+
+  // ---- Outfit details (zipper, strings, pockets...)
+  o.torso(g);
+
+  // ---- Laptop (CODING)
+  if (pose === "coding") {
+    g.put(5, 14, 6, 2, c.cyan);
+    g.put(4, 16, 8, 1, c.laptop);
   }
 
+  // ---- Hood behind the head
+  if (o.hood) {
+    g.put(3, 2, 10, 1, c.hoodGray);
+    g.put(2, 3, 12, 9, c.hoodGray);
+  }
+
+  // ---- Face skin + ears
+  g.put(5, 4, 6, 2, c.skin);
+  g.put(4, 6, 8, 5, c.skin);
+
+  if (!o.hood) {
+    g.put(3, 6, 1, 2, c.skin);
+    g.put(12, 6, 1, 2, c.skin);
+  }
+
+  // Nose
+  g.put(7, 8, 2, 1, c.skinShade);
+
+  // ---- Beard (sideburns, cheeks, moustache, chin)
+  g.put(4, 8, 2, 1, c.beard);
+  g.put(10, 8, 2, 1, c.beard);
+  g.put(4, 9, 8, 1, c.beard);
+  g.put(4, 10, 3, 1, c.beard);
+  g.put(9, 10, 3, 1, c.beard);
+  g.put(5, 11, 6, 1, c.beard);
+  g.put(6, 12, 4, 1, c.beard);
+
+  // ---- Mouth
+  const bigSmile = state === "WELCOME" || state === "CELEBRATING";
+
+  if (bigSmile) {
+    g.put(6, 10, 4, 2, c.mouthDark);
+    g.put(7, 10, 2, 1, c.white);
+  } else {
+    g.put(7, 10, 2, 1, c.mouth);
+  }
+
+  if (outfit === "ORANGE" && !bigSmile) {
+    g.put(7, 10, 2, 1, c.white);
+  }
+
+  // ---- Eyes
   if (state === "IDLE" || state === "SLEEPING") {
-    face = `
-      ${pixel(5, 8, 2, 1, c.outline)}
-      ${pixel(10, 8, 2, 1, c.outline)}
-      ${pixel(7, 7, 2, 1, c.hair)}
-      ${pixel(10, 7, 2, 1, c.hair)}
-      ${pixel(7, 11, 3, 2, c.beard)}
-      ${pixel(10, 11, 2, 2, c.beard)}
-      ${pixel(8, 12, 2, 1, c.mouth)}
-    `;
+    g.put(5, 7, 2, 1, c.outline);
+    g.put(9, 7, 2, 1, c.outline);
+  } else {
+    g.put(5, 7, 1, 1, c.white);
+    g.put(6, 7, 1, 1, c.outline);
+    g.put(9, 7, 1, 1, c.outline);
+    g.put(10, 7, 1, 1, c.white);
   }
 
-  const defaultHair = `
-    ${pixel(3, 3, 10, 2, c.outline)}
-    ${pixel(4, 2, 8, 2, c.hair)}
-    ${pixel(3, 3, 2, 2, c.hair)}
-    ${pixel(5, 1, 2, 2, c.hair)}
-    ${pixel(8, 1, 2, 2, c.hair)}
-    ${pixel(11, 2, 2, 2, c.hair)}
-  `;
-
-  const defaultHead = `
-    ${pixel(3, 4, 10, 8, c.outline)}
-    ${pixel(4, 4, 8, 7, c.skin)}
-    ${pixel(3, 6, 1, 3, c.skin)}
-    ${pixel(12, 6, 1, 3, c.skin)}
-  `;
-
-  const hair = o.hair !== undefined ? o.hair : defaultHair;
-  const headBase = o.headBase || defaultHead;
-  const eyewear = o.eyewear || "";
-
-  const teeth = outfit === "ORANGE"
-    ? pixel(8, 12, 3, 1, c.white)
-    : "";
-
-  const head = `${headBase}${hair}${face}${eyewear}${teeth}`;
-
-  const body = `
-    ${pixel(4, 13, 9, 6, c.outline)}
-    ${pixel(5, 13, 7, 5, o.main)}
-    ${o.detail}
-    ${pixel(3, 14, 2, 4, c.outline)}
-    ${pixel(3, 14, 1, 3, o.main)}
-    ${pixel(12, 14, 2, 4, c.outline)}
-    ${pixel(13, 14, 1, 3, o.main)}
-    ${pixel(3, 18, 1, 1, c.skin)}
-    ${pixel(13, 18, 1, 1, c.skin)}
-    ${pixel(5, 18, 7, 4, c.outline)}
-    ${pixel(6, 18, 2, 3, o.pants)}
-    ${pixel(9, 18, 2, 3, o.pants)}
-    ${pixel(5, 21, 3, 2, c.outline)}
-    ${pixel(9, 21, 3, 2, c.outline)}
-    ${pixel(4, 22, 4, 2, c.shoes)}
-    ${pixel(9, 22, 4, 2, c.shoes)}
-  `;
-
-  let action = "";
-
-  if (state === "CODING") {
-    action = `
-      ${pixel(1, 16, 4, 1, c.outline)}
-      ${pixel(1, 15, 4, 1, o.main)}
-      ${pixel(12, 16, 3, 1, c.outline)}
-      ${pixel(13, 15, 2, 1, c.skin)}
-      ${pixel(5, 17, 7, 1, c.cyan)}
-      ${pixel(5, 18, 7, 1, c.outline)}
-    `;
+  // ---- Eyebrows
+  if (state === "THINKING") {
+    g.put(5, 6, 2, 1, c.hair);
+    g.put(9, 5, 2, 1, c.hair);
+  } else if (state === "DEBUGGING") {
+    g.put(5, 5, 1, 1, c.hair);
+    g.put(6, 6, 2, 1, c.hair);
+    g.put(10, 5, 1, 1, c.hair);
+    g.put(8, 6, 2, 1, c.hair);
+  } else {
+    g.put(5, 6, 2, 1, c.hair);
+    g.put(9, 6, 2, 1, c.hair);
   }
 
-  if (state === "CELEBRATING") {
-    action = `
-      ${pixel(1, 10, 2, 3, c.outline)}
-      ${pixel(1, 9, 1, 3, c.skin)}
-      ${pixel(13, 10, 2, 3, c.outline)}
-      ${pixel(14, 9, 1, 3, c.skin)}
-      ${pixel(1, 8, 1, 1, c.cyan)}
-      ${pixel(14, 8, 1, 1, c.cyan)}
-    `;
+  // ---- Hair, beanie or hood fringe
+  if (o.beanie) {
+    g.put(3, 2, 10, 3, c.orange);
+    g.put(3, 4, 10, 1, c.orangeDark);
+    g.put(7, 1, 2, 1, c.white);
+    g.put(2, 5, 2, 4, c.cyan);
+    g.put(12, 5, 2, 4, c.cyan);
+  } else if (o.hood) {
+    g.put(5, 4, 6, 1, c.hair);
+  } else {
+    g.put(4, 2, 8, 2, c.hair);
+    g.put(3, 3, 2, 2, c.hair);
+    g.put(11, 3, 2, 2, c.hair);
+    g.put(5, 1, 1, 1, c.hair);
+    g.put(7, 1, 1, 1, c.hair);
+    g.put(10, 1, 1, 1, c.hair);
   }
 
-  if (state === "WELCOME") {
-    action = `
-      ${pixel(13, 10, 2, 3, c.outline)}
-      ${pixel(14, 9, 1, 3, c.skin)}
-    `;
+  // ---- Sunglasses
+  if (o.shades) {
+    g.put(4, 6, 3, 2, c.shades);
+    g.put(9, 6, 3, 2, c.shades);
+    g.put(7, 6, 2, 1, c.shades);
+    g.put(5, 6, 1, 1, c.shine);
+    g.put(10, 6, 1, 1, c.shine);
   }
 
   return `
     <g class="standing-character">
-      ${head}
-      ${body}
-      ${action}
+      ${g.toSvg(c.outline)}
     </g>
   `;
 }
@@ -681,7 +759,7 @@ function createSvg(message, mode, greeting, state, outfit) {
   // This prevents CSS transforms from moving the character off-screen.
   const characterTransform = sleeping
     ? "translate(530 82) scale(8)"
-    : "translate(558 42) scale(9)";
+    : "translate(558 40) scale(9)";
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
