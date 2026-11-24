@@ -1,3 +1,4 @@
+
 const personalities = {
   WELCOME: [
     "Hey Human! Welcome to my Lab!",
@@ -89,10 +90,12 @@ const stateToPersonality = {
 };
 
 // ---------------------------------------------------------------
-// NEW: character outfits.
-// Each state now has its own look. You can also force one with
+// Character outfits.
+// Each state has its own look.
+// Force an outfit with:
 // ?outfit=JACKET | HOODIE | HOOD | BEANIE | LAB | ORANGE
 // ---------------------------------------------------------------
+
 const validOutfits = [
   "JACKET",
   "HOODIE",
@@ -130,7 +133,6 @@ const COLORS = {
   blanketDark: "#26384f",
   pillow: "#d8dce2",
 
-  // New outfit colors
   jeans: "#2f4f8f",
   hoodie: "#1f2433",
   hoodieDark: "#161a26",
@@ -280,8 +282,10 @@ function wrapMessage(message, maxLength = 39, maxLines = 3) {
   return lines;
 }
 
+// ---------------------------------------------------------------
 // Pixel-art drawing helper.
-// Every rectangle is aligned to the character's pixel grid.
+// ---------------------------------------------------------------
+
 function pixel(x, y, w, h, color) {
   return `
     <rect
@@ -294,14 +298,9 @@ function pixel(x, y, w, h, color) {
 }
 
 // ---------------------------------------------------------------
-// NEW: outfit definitions.
-// main/dark  -> torso + sleeves colors
-// pants      -> pants color
-// detail     -> extra pixels drawn on the torso
-// headBase   -> optional replacement for the default head
-// hair       -> optional replacement for the default hair
-// eyewear    -> optional pixels drawn on top of the face
+// Outfit definitions.
 // ---------------------------------------------------------------
+
 function getOutfitStyle(outfit) {
   const c = COLORS;
 
@@ -408,7 +407,10 @@ function getOutfitStyle(outfit) {
   }
 }
 
-// Original 16x24 pixel-art character, now with outfits.
+// ---------------------------------------------------------------
+// Standing character.
+// ---------------------------------------------------------------
+
 function getStandingCharacter(state, outfit) {
   const c = COLORS;
   const o = getOutfitStyle(outfit);
@@ -511,7 +513,6 @@ function getStandingCharacter(state, outfit) {
   const headBase = o.headBase || defaultHead;
   const eyewear = o.eyewear || "";
 
-  // Orange outfit: big white smile under the sunglasses.
   const teeth = outfit === "ORANGE"
     ? pixel(8, 12, 3, 1, c.white)
     : "";
@@ -567,7 +568,6 @@ function getStandingCharacter(state, outfit) {
     `;
   }
 
-  // NEW: welcome wave with the right hand.
   if (state === "WELCOME") {
     action = `
       ${pixel(13, 10, 2, 3, c.outline)}
@@ -584,8 +584,10 @@ function getStandingCharacter(state, outfit) {
   `;
 }
 
-// IDLE and SLEEPING use a completely different sleeping pose.
-// Booda lies on his side under a pixel-art blanket.
+// ---------------------------------------------------------------
+// Sleeping character.
+// ---------------------------------------------------------------
+
 function getSleepingCharacter() {
   const c = COLORS;
 
@@ -656,6 +658,10 @@ function getSleepingCharacter() {
     </g>
   `;
 }
+
+// ---------------------------------------------------------------
+// State effects.
+// ---------------------------------------------------------------
 
 function getStateEffects(state) {
   switch (state) {
@@ -732,6 +738,11 @@ function getStateEffects(state) {
   }
 }
 
+// ---------------------------------------------------------------
+// SVG generator.
+// IMPORTANT: Positioning and animation use separate SVG groups.
+// ---------------------------------------------------------------
+
 function createSvg(message, mode, greeting, state, outfit) {
   const lines = wrapMessage(message);
 
@@ -784,33 +795,36 @@ function createSvg(message, mode, greeting, state, outfit) {
         shape-rendering: crispEdges;
       }
 
-      .pixel-character {
+      /* Positioning is handled by the parent SVG group.
+         This group handles animation only. */
+
+      .character-motion {
         transform-box: fill-box;
         transform-origin: center;
       }
 
-      .state-IDLE .pixel-character,
-      .state-SLEEPING .pixel-character {
+      .state-IDLE .character-motion,
+      .state-SLEEPING .character-motion {
         animation: sleepFloat 5s ease-in-out infinite;
       }
 
-      .state-CODING .pixel-character {
+      .state-CODING .character-motion {
         animation: codingFloat 1.5s ease-in-out infinite;
       }
 
-      .state-THINKING .pixel-character {
+      .state-THINKING .character-motion {
         animation: thinkFloat 3s ease-in-out infinite;
       }
 
-      .state-CELEBRATING .pixel-character {
+      .state-CELEBRATING .character-motion {
         animation: celebrate .7s ease-in-out infinite;
       }
 
-      .state-DEBUGGING .pixel-character {
+      .state-DEBUGGING .character-motion {
         animation: debugShake .25s ease-in-out infinite;
       }
 
-      .state-WELCOME .pixel-character {
+      .state-WELCOME .character-motion {
         animation: welcomeFloat 2s ease-in-out infinite;
       }
 
@@ -928,9 +942,22 @@ function createSvg(message, mode, greeting, state, outfit) {
   <ellipse cx="625" cy="286" rx="91" ry="10"
     fill="#020617" opacity=".65"/>
 
+  <!--
+    OUTER GROUP:
+    Controls character position and scale.
+
+    INNER GROUP:
+    Controls character animation.
+
+    Separating these transformations prevents
+    CSS animation from overriding SVG positioning.
+  -->
+
   <g class="state-${safeState}">
-    <g class="pixel-character" transform="${characterTransform}">
-      ${character}
+    <g transform="${characterTransform}">
+      <g class="character-motion">
+        ${character}
+      </g>
     </g>
   </g>
 
@@ -955,6 +982,10 @@ function createSvg(message, mode, greeting, state, outfit) {
 
 </svg>`;
 }
+
+// ---------------------------------------------------------------
+// API HANDLER.
+// ---------------------------------------------------------------
 
 export default function handler(req, res) {
   const { mode, state, message } = getPersonality(
