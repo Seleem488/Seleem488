@@ -1,3 +1,4 @@
+
 const personalities = {
   WELCOME: [
     "Hey Human! Welcome to my Lab!",
@@ -252,7 +253,7 @@ function wrapMessage(message, maxLength = 39, maxLines = 3) {
 }
 
 // ---------------------------------------------------------------
-// Pixel helper (used by the sleeping scene)
+// Pixel helper
 // ---------------------------------------------------------------
 
 function pixel(x, y, w, h, color) {
@@ -260,13 +261,7 @@ function pixel(x, y, w, h, color) {
 }
 
 // ---------------------------------------------------------------
-// Pixel grid
-//
-// The standing character is painted onto a real pixel grid
-// (columns 0-15, rows 0-24). Layers are painted back to front,
-// then the dark outline is generated automatically around the
-// whole silhouette. Nothing can drift out of place anymore,
-// because every part is placed on the same grid.
+// Pixel Grid
 // ---------------------------------------------------------------
 
 class PixelGrid {
@@ -300,7 +295,10 @@ class PixelGrid {
         if (this.cells[y][x]) continue;
 
         const touching = [
-          [x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]
+          [x - 1, y],
+          [x + 1, y],
+          [x, y - 1],
+          [x, y + 1]
         ].some(([nx, ny]) =>
           nx >= 0 && ny >= 0 &&
           nx < this.width && ny < this.height &&
@@ -437,7 +435,7 @@ function getOutfitStyle(outfit) {
 }
 
 // ---------------------------------------------------------------
-// Standing character
+// Standing character - corrected facial layout
 // ---------------------------------------------------------------
 
 function getStandingCharacter(state, outfit) {
@@ -445,22 +443,38 @@ function getStandingCharacter(state, outfit) {
   const o = getOutfitStyle(outfit);
   const g = new PixelGrid(16, 25);
 
-  // Which arm pose?
-  let pose = "down";
-  if (state === "CELEBRATING") pose = "both-up";
-  if (state === "WELCOME") pose = "right-up";
-  if (state === "CODING") pose = "coding";
+  const pose =
+    state === "CELEBRATING" ? "both-up" :
+    state === "WELCOME" ? "right-up" :
+    state === "CODING" ? "coding" :
+    "down";
 
-  // ---- Legs and shoes
+  const bigSmile =
+    state === "WELCOME" || state === "CELEBRATING";
+
+  const sleeping =
+    state === "IDLE" || state === "SLEEPING";
+
+  // -----------------------------------------------------------
+  // Legs and shoes
+  // -----------------------------------------------------------
+
   g.put(5, 19, 2, 3, o.pants);
   g.put(9, 19, 2, 3, o.pants);
+
   g.put(4, 22, 3, 2, c.shoes);
   g.put(9, 22, 3, 2, c.shoes);
 
-  // ---- Torso
+  // -----------------------------------------------------------
+  // Torso
+  // -----------------------------------------------------------
+
   g.put(4, 12, 8, 7, o.main);
 
-  // ---- Arms
+  // -----------------------------------------------------------
+  // Arms
+  // -----------------------------------------------------------
+
   const leftUp = pose === "both-up";
   const rightUp = pose === "both-up" || pose === "right-up";
 
@@ -488,108 +502,152 @@ function getStandingCharacter(state, outfit) {
     g.put(12, 18, 2, 1, c.skin);
   }
 
-  // Arm seams (only when the arm hangs down)
   if (!leftUp) g.put(4, 13, 1, 5, o.seam);
   if (!rightUp) g.put(11, 13, 1, 5, o.seam);
 
-  // ---- Outfit details (zipper, strings, pockets...)
+  // -----------------------------------------------------------
+  // Outfit details
+  // -----------------------------------------------------------
+
   o.torso(g);
 
-  // ---- Laptop (CODING)
   if (pose === "coding") {
     g.put(5, 14, 6, 2, c.cyan);
     g.put(4, 16, 8, 1, c.laptop);
   }
 
-  // ---- Hood behind the head
+  // -----------------------------------------------------------
+  // Hood behind the head
+  // -----------------------------------------------------------
+
   if (o.hood) {
     g.put(3, 2, 10, 1, c.hoodGray);
     g.put(2, 3, 12, 9, c.hoodGray);
   }
 
-  // ---- Face skin + ears
+  // -----------------------------------------------------------
+  // Head, neck and ears
+  // -----------------------------------------------------------
+
+  // Neck
+  g.put(6, 11, 4, 3, c.skinShade);
+  g.put(7, 11, 2, 2, c.skin);
+
+  // Face base
   g.put(5, 4, 6, 2, c.skin);
-  g.put(4, 6, 8, 5, c.skin);
+  g.put(4, 6, 8, 4, c.skin);
+  g.put(5, 10, 6, 2, c.skin);
 
-  if (!o.hood) {
-    g.put(3, 6, 1, 2, c.skin);
-    g.put(12, 6, 1, 2, c.skin);
-  }
+  // Ears
+  g.put(3, 6, 1, 2, c.skinShade);
+  g.put(12, 6, 1, 2, c.skinShade);
 
-  // Nose
-  g.put(7, 8, 2, 1, c.skinShade);
+  g.put(3, 6, 1, 1, c.skin);
+  g.put(12, 6, 1, 1, c.skin);
 
-  // ---- Beard (sideburns, cheeks, moustache, chin)
-  g.put(4, 8, 2, 1, c.beard);
-  g.put(10, 8, 2, 1, c.beard);
-  g.put(4, 9, 8, 1, c.beard);
-  g.put(4, 10, 3, 1, c.beard);
-  g.put(9, 10, 3, 1, c.beard);
-  g.put(5, 11, 6, 1, c.beard);
+  // -----------------------------------------------------------
+  // Beard and moustache
+  // -----------------------------------------------------------
+
+  // Sideburns
+  g.put(4, 8, 1, 3, c.beard);
+  g.put(11, 8, 1, 3, c.beard);
+
+  // Cheek beard
+  g.put(5, 10, 2, 2, c.beard);
+  g.put(9, 10, 2, 2, c.beard);
+
+  // Chin beard
   g.put(6, 12, 4, 1, c.beard);
+  g.put(7, 13, 2, 1, c.beard);
 
-  // ---- Mouth
-  const bigSmile = state === "WELCOME" || state === "CELEBRATING";
+  // Moustache
+  g.put(6, 9, 2, 1, c.beard);
+  g.put(8, 9, 2, 1, c.beard);
 
-  if (bigSmile) {
-    g.put(6, 10, 4, 2, c.mouthDark);
-    g.put(7, 10, 2, 1, c.white);
-  } else {
-    g.put(7, 10, 2, 1, c.mouth);
-  }
+  // -----------------------------------------------------------
+  // Hair and headwear
+  // -----------------------------------------------------------
 
-  if (outfit === "ORANGE" && !bigSmile) {
-    g.put(7, 10, 2, 1, c.white);
-  }
-
-  // ---- Eyes
-  if (state === "IDLE" || state === "SLEEPING") {
-    g.put(5, 7, 2, 1, c.outline);
-    g.put(9, 7, 2, 1, c.outline);
-  } else {
-    g.put(5, 7, 1, 1, c.white);
-    g.put(6, 7, 1, 1, c.outline);
-    g.put(9, 7, 1, 1, c.outline);
-    g.put(10, 7, 1, 1, c.white);
-  }
-
-  // ---- Eyebrows
-  if (state === "THINKING") {
-    g.put(5, 6, 2, 1, c.hair);
-    g.put(9, 5, 2, 1, c.hair);
-  } else if (state === "DEBUGGING") {
-    g.put(5, 5, 1, 1, c.hair);
-    g.put(6, 6, 2, 1, c.hair);
-    g.put(10, 5, 1, 1, c.hair);
-    g.put(8, 6, 2, 1, c.hair);
-  } else {
-    g.put(5, 6, 2, 1, c.hair);
-    g.put(9, 6, 2, 1, c.hair);
-  }
-
-  // ---- Hair, beanie or hood fringe
   if (o.beanie) {
     g.put(3, 2, 10, 3, c.orange);
     g.put(3, 4, 10, 1, c.orangeDark);
     g.put(7, 1, 2, 1, c.white);
-    g.put(2, 5, 2, 4, c.cyan);
-    g.put(12, 5, 2, 4, c.cyan);
+
+    g.put(3, 5, 1, 3, c.hair);
+    g.put(12, 5, 1, 3, c.hair);
   } else if (o.hood) {
+    g.put(4, 3, 8, 2, c.hair);
     g.put(5, 4, 6, 1, c.hair);
   } else {
     g.put(4, 2, 8, 2, c.hair);
     g.put(3, 3, 2, 2, c.hair);
     g.put(11, 3, 2, 2, c.hair);
-    g.put(5, 1, 1, 1, c.hair);
-    g.put(7, 1, 1, 1, c.hair);
-    g.put(10, 1, 1, 1, c.hair);
+
+    g.put(5, 1, 2, 1, c.hair);
+    g.put(8, 1, 2, 1, c.hair);
   }
 
-  // ---- Sunglasses
+  // -----------------------------------------------------------
+  // Eyebrows
+  // -----------------------------------------------------------
+
+  if (state === "THINKING") {
+    g.put(5, 5, 2, 1, c.hair);
+    g.put(9, 4, 2, 1, c.hair);
+  } else if (state === "DEBUGGING") {
+    g.put(5, 5, 2, 1, c.hair);
+    g.put(9, 5, 2, 1, c.hair);
+  } else {
+    g.put(5, 5, 2, 1, c.hair);
+    g.put(9, 5, 2, 1, c.hair);
+  }
+
+  // -----------------------------------------------------------
+  // Eyes - aligned symmetrically
+  // -----------------------------------------------------------
+
+  if (sleeping) {
+    g.put(5, 7, 2, 1, c.outline);
+    g.put(9, 7, 2, 1, c.outline);
+  } else {
+    // Left eye
+    g.put(5, 7, 2, 1, c.white);
+    g.put(6, 7, 1, 1, c.outline);
+
+    // Right eye
+    g.put(9, 7, 2, 1, c.white);
+    g.put(9, 7, 1, 1, c.outline);
+  }
+
+  // -----------------------------------------------------------
+  // Nose - centered
+  // -----------------------------------------------------------
+
+  g.put(7, 8, 2, 1, c.skinShade);
+  g.put(8, 8, 1, 1, c.skin);
+
+  // -----------------------------------------------------------
+  // Mouth - below the nose
+  // -----------------------------------------------------------
+
+  if (bigSmile) {
+    g.put(7, 10, 2, 1, c.mouthDark);
+    g.put(7, 10, 2, 1, c.white);
+    g.put(7, 11, 2, 1, c.mouth);
+  } else {
+    g.put(7, 10, 2, 1, c.mouth);
+  }
+
+  // -----------------------------------------------------------
+  // Sunglasses
+  // -----------------------------------------------------------
+
   if (o.shades) {
     g.put(4, 6, 3, 2, c.shades);
     g.put(9, 6, 3, 2, c.shades);
     g.put(7, 6, 2, 1, c.shades);
+
     g.put(5, 6, 1, 1, c.shine);
     g.put(10, 6, 1, 1, c.shine);
   }
@@ -755,8 +813,6 @@ function createSvg(message, mode, greeting, state, outfit) {
     ? getSleepingCharacter()
     : getStandingCharacter(state, outfit);
 
-  // Character position and scale are kept separate from animation.
-  // This prevents CSS transforms from moving the character off-screen.
   const characterTransform = sleeping
     ? "translate(530 82) scale(8)"
     : "translate(558 40) scale(9)";
@@ -934,7 +990,7 @@ function createSvg(message, mode, greeting, state, outfit) {
   <ellipse cx="625" cy="286" rx="91" ry="10"
     fill="#020617" opacity=".65"/>
 
-  <!-- Character: fixed positioning wrapper + animated inner group -->
+  <!-- Character -->
   <g class="state-${safeState}">
     <g class="character-position" transform="${characterTransform}">
       <g class="character-motion">
@@ -995,10 +1051,12 @@ export default function handler(req, res) {
   );
 
   res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+
   res.setHeader(
     "Cache-Control",
     "no-store, no-cache, must-revalidate, max-age=0"
   );
+
   res.setHeader("CDN-Cache-Control", "no-store");
   res.setHeader("Vercel-CDN-Cache-Control", "no-store");
 
