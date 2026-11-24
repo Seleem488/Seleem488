@@ -7,7 +7,6 @@ const personalities = {
     "Curiosity detected. Access granted!",
     "My circuits are excited to see you!"
   ],
-
   YOLO: [
     "YOLO is detecting objects. Stay out of my bounding boxes!",
     "Object detected! Confidence: 99.9%",
@@ -15,7 +14,6 @@ const personalities = {
     "Drawing bounding boxes like a boss!",
     "Training YOLO. Please do not feed the GPU."
   ],
-
   RAG: [
     "Searching documents... Context found!",
     "Retrieving knowledge. Hallucinations not invited!",
@@ -23,7 +21,6 @@ const personalities = {
     "Vector database says hello!",
     "RAG mode: Grounded answers only!"
   ],
-
   CODING: [
     "Another line of code, another step forward!",
     "Python is my native language. Beep!",
@@ -31,7 +28,6 @@ const personalities = {
     "Code. Test. Debug. Repeat.",
     "I don't always code, but when I do, I forget to sleep!"
   ],
-
   DEBUGGING: [
     "It's not a bug. It's an undocumented feature!",
     "Debugging mode activated. Send coffee!",
@@ -39,7 +35,6 @@ const personalities = {
     "Stack trace detected. Investigating...",
     "Have you tried turning the model off and on?"
   ],
-
   GENERAL: [
     "Booda is online. Let's build something awesome!",
     "Too much curiosity detected!",
@@ -61,13 +56,8 @@ const easterEggs = [
 const validModes = Object.keys(personalities);
 
 const validStates = [
-  "IDLE",
-  "SLEEPING",
-  "CODING",
-  "THINKING",
-  "CELEBRATING",
-  "DEBUGGING",
-  "WELCOME"
+  "IDLE", "SLEEPING", "CODING", "THINKING",
+  "CELEBRATING", "DEBUGGING", "WELCOME"
 ];
 
 const modeToState = {
@@ -89,20 +79,8 @@ const stateToPersonality = {
   WELCOME: "WELCOME"
 };
 
-// ---------------------------------------------------------------
-// Character outfits.
-// Each state has its own look.
-// Force an outfit with:
-// ?outfit=JACKET | HOODIE | HOOD | BEANIE | LAB | ORANGE
-// ---------------------------------------------------------------
-
 const validOutfits = [
-  "JACKET",
-  "HOODIE",
-  "HOOD",
-  "BEANIE",
-  "LAB",
-  "ORANGE"
+  "JACKET", "HOODIE", "HOOD", "BEANIE", "LAB", "ORANGE"
 ];
 
 const stateToOutfit = {
@@ -132,7 +110,6 @@ const COLORS = {
   blanketLight: "#526b8b",
   blanketDark: "#26384f",
   pillow: "#d8dce2",
-
   jeans: "#2f4f8f",
   hoodie: "#1f2433",
   hoodieDark: "#161a26",
@@ -165,13 +142,11 @@ function escapeXml(value) {
 }
 
 function getCairoHour() {
-  return Number(
-    new Intl.DateTimeFormat("en-US", {
-      hour: "numeric",
-      hourCycle: "h23",
-      timeZone: "Africa/Cairo"
-    }).format(new Date())
-  );
+  return Number(new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    hourCycle: "h23",
+    timeZone: "Africa/Cairo"
+  }).format(new Date()));
 }
 
 function getGreeting() {
@@ -216,12 +191,7 @@ function getPersonality(requestedMode, requestedState) {
     };
   }
 
-  const selected = pick([
-    "WELCOME",
-    "GENERAL",
-    "GENERAL",
-    "GENERAL"
-  ]);
+  const selected = pick(["WELCOME", "GENERAL", "GENERAL", "GENERAL"]);
 
   return {
     mode: selected,
@@ -233,9 +203,9 @@ function getPersonality(requestedMode, requestedState) {
 function getOutfit(requestedOutfit, state) {
   const outfit = String(requestedOutfit || "").toUpperCase();
 
-  if (validOutfits.includes(outfit)) return outfit;
-
-  return stateToOutfit[state] || "JACKET";
+  return validOutfits.includes(outfit)
+    ? outfit
+    : stateToOutfit[state] || "JACKET";
 }
 
 function wrapMessage(message, maxLength = 39, maxLines = 3) {
@@ -254,9 +224,7 @@ function wrapMessage(message, maxLength = 39, maxLines = 3) {
     ) || [];
 
     for (const word of chunks) {
-      const candidate = current
-        ? `${current} ${word}`
-        : word;
+      const candidate = current ? `${current} ${word}` : word;
 
       if (candidate.length > maxLength) {
         if (current) lines.push(current);
@@ -271,11 +239,8 @@ function wrapMessage(message, maxLength = 39, maxLines = 3) {
 
   if (lines.length > maxLines) {
     const visible = lines.slice(0, maxLines);
-    const last = visible[maxLines - 1];
-
     visible[maxLines - 1] =
-      `${last.slice(0, maxLength - 1).trimEnd()}…`;
-
+      `${visible[maxLines - 1].slice(0, maxLength - 1).trimEnd()}…`;
     return visible;
   }
 
@@ -283,22 +248,15 @@ function wrapMessage(message, maxLength = 39, maxLines = 3) {
 }
 
 // ---------------------------------------------------------------
-// Pixel-art drawing helper.
+// Pixel helper
 // ---------------------------------------------------------------
 
 function pixel(x, y, w, h, color) {
-  return `
-    <rect
-      x="${x}" y="${y}"
-      width="${w}" height="${h}"
-      fill="${color}"
-      shape-rendering="crispEdges"
-    />
-  `;
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${color}"/>`;
 }
 
 // ---------------------------------------------------------------
-// Outfit definitions.
+// Outfit definitions
 // ---------------------------------------------------------------
 
 function getOutfitStyle(outfit) {
@@ -408,7 +366,7 @@ function getOutfitStyle(outfit) {
 }
 
 // ---------------------------------------------------------------
-// Standing character.
+// Standing character
 // ---------------------------------------------------------------
 
 function getStandingCharacter(state, outfit) {
@@ -427,7 +385,7 @@ function getStandingCharacter(state, outfit) {
     ${pixel(8, 12, 2, 1, c.mouth)}
   `;
 
-  if (state === "WELCOME") {
+  if (state === "WELCOME" || state === "CELEBRATING") {
     face = `
       ${pixel(5, 8, 2, 2, c.outline)}
       ${pixel(10, 8, 2, 2, c.outline)}
@@ -468,20 +426,7 @@ function getStandingCharacter(state, outfit) {
     `;
   }
 
-  if (state === "CELEBRATING") {
-    face = `
-      ${pixel(5, 8, 2, 2, c.outline)}
-      ${pixel(10, 8, 2, 2, c.outline)}
-      ${pixel(5, 8, 1, 1, c.white)}
-      ${pixel(10, 8, 1, 1, c.white)}
-      ${pixel(7, 7, 2, 1, c.hair)}
-      ${pixel(10, 7, 2, 1, c.hair)}
-      ${pixel(7, 11, 5, 2, c.beard)}
-      ${pixel(8, 12, 3, 1, c.mouth)}
-    `;
-  }
-
-  if (state === "SLEEPING" || state === "IDLE") {
+  if (state === "IDLE" || state === "SLEEPING") {
     face = `
       ${pixel(5, 8, 2, 1, c.outline)}
       ${pixel(10, 8, 2, 1, c.outline)}
@@ -517,13 +462,7 @@ function getStandingCharacter(state, outfit) {
     ? pixel(8, 12, 3, 1, c.white)
     : "";
 
-  const head = `
-    ${headBase}
-    ${hair}
-    ${face}
-    ${eyewear}
-    ${teeth}
-  `;
+  const head = `${headBase}${hair}${face}${eyewear}${teeth}`;
 
   const body = `
     ${pixel(4, 13, 9, 6, c.outline)}
@@ -585,7 +524,7 @@ function getStandingCharacter(state, outfit) {
 }
 
 // ---------------------------------------------------------------
-// Sleeping character.
+// Sleeping character
 // ---------------------------------------------------------------
 
 function getSleepingCharacter() {
@@ -593,74 +532,56 @@ function getSleepingCharacter() {
 
   return `
     <g class="sleeping-character">
-
-      <!-- Pillow -->
       ${pixel(3, 12, 8, 3, c.outline)}
       ${pixel(4, 12, 6, 2, c.pillow)}
       ${pixel(4, 14, 5, 1, "#b9c0ca")}
 
-      <!-- Hair -->
       ${pixel(2, 7, 7, 5, c.outline)}
       ${pixel(3, 6, 5, 2, c.hair)}
       ${pixel(2, 7, 2, 3, c.hair)}
       ${pixel(5, 5, 2, 2, c.hair)}
       ${pixel(8, 7, 2, 2, c.hair)}
 
-      <!-- Face -->
       ${pixel(4, 8, 7, 5, c.outline)}
       ${pixel(5, 8, 6, 4, c.skin)}
       ${pixel(10, 9, 2, 3, c.skin)}
-
-      <!-- Closed eye -->
       ${pixel(7, 10, 2, 1, c.outline)}
 
-      <!-- Beard -->
       ${pixel(5, 12, 6, 3, c.outline)}
       ${pixel(6, 12, 4, 2, c.beard)}
       ${pixel(9, 13, 2, 1, c.beard)}
       ${pixel(7, 14, 2, 1, c.mouth)}
 
-      <!-- Neck -->
       ${pixel(10, 13, 3, 3, c.skin)}
-
-      <!-- Body underneath blanket -->
       ${pixel(11, 12, 11, 6, c.outline)}
       ${pixel(12, 13, 9, 4, c.jacket)}
 
-      <!-- Blanket outline -->
       ${pixel(10, 11, 13, 8, c.outline)}
       ${pixel(11, 11, 11, 7, c.blanket)}
       ${pixel(12, 12, 9, 5, c.blanketLight)}
 
-      <!-- Blanket folds -->
       ${pixel(13, 13, 5, 1, c.blanketDark)}
       ${pixel(17, 15, 4, 1, c.blanketDark)}
       ${pixel(12, 17, 8, 1, c.blanketDark)}
 
-      <!-- Blanket edge -->
       ${pixel(10, 11, 2, 8, c.outline)}
       ${pixel(11, 12, 1, 6, c.blanketDark)}
 
-      <!-- Feet peeking out -->
       ${pixel(21, 17, 3, 2, c.outline)}
       ${pixel(22, 17, 2, 1, c.shoes)}
 
-      <!-- Sleep decoration -->
       <g class="sleep-z">
         <text x="19" y="8" fill="${c.cyan}"
-          font-family="monospace" font-size="5"
-          font-weight="bold">Z</text>
+          font-family="monospace" font-size="5" font-weight="bold">Z</text>
         <text x="22" y="5" fill="${c.cyan}"
-          font-family="monospace" font-size="4"
-          font-weight="bold">z</text>
+          font-family="monospace" font-size="4" font-weight="bold">z</text>
       </g>
-
     </g>
   `;
 }
 
 // ---------------------------------------------------------------
-// State effects.
+// State effects
 // ---------------------------------------------------------------
 
 function getStateEffects(state) {
@@ -668,8 +589,7 @@ function getStateEffects(state) {
     case "IDLE":
     case "SLEEPING":
       return `
-        <g fill="#22d3ee" font-family="monospace"
-          font-weight="bold">
+        <g fill="#22d3ee" font-family="monospace" font-weight="bold">
           <text x="675" y="74" font-size="17">Z</text>
           <text x="697" y="53" font-size="22">Z</text>
           <text x="720" y="28" font-size="28">Z</text>
@@ -709,12 +629,10 @@ function getStateEffects(state) {
     case "DEBUGGING":
       return `
         <g>
-          <path d="M715 37 l13 13 -13 13 -13 -13 Z"
-            fill="#fb7185"/>
+          <path d="M715 37 l13 13 -13 13 -13 -13 Z" fill="#fb7185"/>
           <path d="M715 44 v9 M715 57 v2"
             stroke="#101116" stroke-width="3"/>
-          <rect x="526" y="155" width="8" height="8"
-            fill="#fb7185"/>
+          <rect x="526" y="155" width="8" height="8" fill="#fb7185"/>
         </g>
       `;
 
@@ -739,8 +657,7 @@ function getStateEffects(state) {
 }
 
 // ---------------------------------------------------------------
-// SVG generator.
-// IMPORTANT: Positioning and animation use separate SVG groups.
+// SVG generator
 // ---------------------------------------------------------------
 
 function createSvg(message, mode, greeting, state, outfit) {
@@ -760,20 +677,24 @@ function createSvg(message, mode, greeting, state, outfit) {
     ? getSleepingCharacter()
     : getStandingCharacter(state, outfit);
 
+  // Character position and scale are kept separate from animation.
+  // This prevents CSS transforms from moving the character off-screen.
   const characterTransform = sleeping
-    ? "translate(532 92) scale(8)"
-    : "translate(566 50) scale(8)";
+    ? "translate(530 82) scale(8)"
+    : "translate(558 42) scale(9)";
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
   width="760"
   height="320"
   viewBox="0 0 760 320"
+  preserveAspectRatio="xMidYMid meet"
+  overflow="hidden"
   role="img"
   aria-labelledby="title desc">
 
   <title id="title">BOODA - Pixel Art AI Mascot</title>
-  <desc id="desc">Booda, an original bearded pixel-art AI engineer with a different outfit for each state. In idle mode he sleeps under a blanket.</desc>
+  <desc id="desc">BOODA, an original bearded pixel-art AI engineer.</desc>
 
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
@@ -783,11 +704,8 @@ function createSvg(message, mode, greeting, state, outfit) {
 
     <pattern id="grid" width="24" height="24"
       patternUnits="userSpaceOnUse">
-      <path d="M24 0 H0 V24"
-        fill="none"
-        stroke="#1e293b"
-        stroke-width="1"
-        opacity=".45"/>
+      <path d="M24 0 H0 V24" fill="none"
+        stroke="#1e293b" stroke-width="1" opacity=".45"/>
     </pattern>
 
     <style>
@@ -795,12 +713,10 @@ function createSvg(message, mode, greeting, state, outfit) {
         shape-rendering: crispEdges;
       }
 
-      /* Positioning is handled by the parent SVG group.
-         This group handles animation only. */
-
       .character-motion {
         transform-box: fill-box;
         transform-origin: center;
+        will-change: transform;
       }
 
       .state-IDLE .character-motion,
@@ -892,7 +808,7 @@ function createSvg(message, mode, greeting, state, outfit) {
       }
 
       @media (prefers-reduced-motion: reduce) {
-        * {
+        *, *::before, *::after {
           animation: none !important;
         }
       }
@@ -922,9 +838,7 @@ function createSvg(message, mode, greeting, state, outfit) {
       Q461 206 445 206 H390
       L421 231 L355 206 H40
       Q24 206 24 190 Z"
-      fill="#111c2b"
-      stroke="#22d3ee"
-      stroke-width="2.5"/>
+      fill="#111c2b" stroke="#22d3ee" stroke-width="2.5"/>
 
     <path d="M25 61 Q25 46 41 46 H444"
       fill="none" stroke="#fbbf24" stroke-width="3"/>
@@ -942,19 +856,9 @@ function createSvg(message, mode, greeting, state, outfit) {
   <ellipse cx="625" cy="286" rx="91" ry="10"
     fill="#020617" opacity=".65"/>
 
-  <!--
-    OUTER GROUP:
-    Controls character position and scale.
-
-    INNER GROUP:
-    Controls character animation.
-
-    Separating these transformations prevents
-    CSS animation from overriding SVG positioning.
-  -->
-
+  <!-- Character: fixed positioning wrapper + animated inner group -->
   <g class="state-${safeState}">
-    <g transform="${characterTransform}">
+    <g class="character-position" transform="${characterTransform}">
       <g class="character-motion">
         ${character}
       </g>
@@ -979,12 +883,11 @@ function createSvg(message, mode, greeting, state, outfit) {
   <!-- Footer -->
   <text x="25" y="286" class="footer">${safeGreeting}</text>
   <text x="25" y="304" class="footer">BOODA AI LAB // ${safeMode}</text>
-
 </svg>`;
 }
 
 // ---------------------------------------------------------------
-// API HANDLER.
+// API HANDLER
 // ---------------------------------------------------------------
 
 export default function handler(req, res) {
@@ -994,7 +897,6 @@ export default function handler(req, res) {
   );
 
   const outfit = getOutfit(req.query?.outfit, state);
-
   const customMessage = req.query?.message;
 
   const finalMessage =
@@ -1014,16 +916,11 @@ export default function handler(req, res) {
     outfit
   );
 
-  res.setHeader(
-    "Content-Type",
-    "image/svg+xml; charset=utf-8"
-  );
-
+  res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
   res.setHeader(
     "Cache-Control",
     "no-store, no-cache, must-revalidate, max-age=0"
   );
-
   res.setHeader("CDN-Cache-Control", "no-store");
   res.setHeader("Vercel-CDN-Cache-Control", "no-store");
 
