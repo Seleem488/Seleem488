@@ -70,7 +70,6 @@ const validStates = [
   "WELCOME"
 ];
 
-// Existing modes mapped to their visual states.
 const modeToState = {
   WELCOME: "WELCOME",
   YOLO: "CODING",
@@ -80,7 +79,6 @@ const modeToState = {
   GENERAL: "IDLE"
 };
 
-// Every visual state must have a valid personality.
 const stateToPersonality = {
   IDLE: "GENERAL",
   SLEEPING: "GENERAL",
@@ -89,6 +87,25 @@ const stateToPersonality = {
   CELEBRATING: "GENERAL",
   DEBUGGING: "DEBUGGING",
   WELCOME: "WELCOME"
+};
+
+const COLORS = {
+  outline: "#101116",
+  hair: "#15110f",
+  skin: "#e0a878",
+  beard: "#15110f",
+  mouth: "#a0524a",
+  jacket: "#3d4244",
+  jacketDark: "#292e30",
+  zipper: "#b8c0c2",
+  pants: "#5a6240",
+  shoes: "#ffffff",
+  cyan: "#22d3ee",
+  white: "#ffffff",
+  blanket: "#344b68",
+  blanketLight: "#526b8b",
+  blanketDark: "#26384f",
+  pillow: "#d8dce2"
 };
 
 function pick(items) {
@@ -129,7 +146,6 @@ function getPersonality(requestedMode, requestedState) {
   const mode = String(requestedMode || "").toUpperCase();
   const state = String(requestedState || "").toUpperCase();
 
-  // Explicit visual state takes priority.
   if (validStates.includes(state)) {
     const personality = validModes.includes(mode)
       ? mode
@@ -142,7 +158,6 @@ function getPersonality(requestedMode, requestedState) {
     };
   }
 
-  // Preserve existing personality modes.
   if (validModes.includes(mode)) {
     return {
       mode,
@@ -151,7 +166,6 @@ function getPersonality(requestedMode, requestedState) {
     };
   }
 
-  // Rare secret messages: approximately 5% chance.
   if (Math.random() < 0.05) {
     return {
       mode: "SECRET MODE",
@@ -218,201 +232,316 @@ function wrapMessage(message, maxLength = 39, maxLines = 3) {
   return lines;
 }
 
-// Different face expressions for each visual state.
-function getFace(state) {
-  switch (state) {
-    case "SLEEPING":
-      return `
-        <g>
-          <path d="M67 105 h25 M123 105 h25"
-                fill="none"
-                stroke="#10202b"
-                stroke-width="9"
-                stroke-linecap="square"/>
-        </g>
-
-        <path d="M91 137 q17 10 34 0"
-              fill="none"
-              stroke="#10202b"
-              stroke-width="5"/>
-      `;
-
-    case "CODING":
-      return `
-        <g>
-          <rect x="67" y="91" width="25" height="29" fill="#10202b"/>
-          <rect x="123" y="91" width="25" height="29" fill="#10202b"/>
-          <rect x="74" y="97" width="9" height="9" fill="#ffffff"/>
-          <rect x="130" y="97" width="9" height="9" fill="#ffffff"/>
-        </g>
-
-        <path d="M94 140 h24"
-              stroke="#10202b"
-              stroke-width="5"/>
-      `;
-
-    case "THINKING":
-      return `
-        <g>
-          <rect x="68" y="98" width="23" height="23" fill="#10202b"/>
-          <rect x="126" y="91" width="23" height="23" fill="#10202b"/>
-          <rect x="75" y="102" width="8" height="8" fill="#ffffff"/>
-          <rect x="133" y="95" width="8" height="8" fill="#ffffff"/>
-        </g>
-
-        <path d="M94 140 h25"
-              stroke="#10202b"
-              stroke-width="5"/>
-      `;
-
-    case "CELEBRATING":
-      return `
-        <g>
-          <path d="M66 111 l13 -13 13 13
-                   M123 111 l13 -13 13 13"
-                fill="none"
-                stroke="#10202b"
-                stroke-width="7"
-                stroke-linecap="square"/>
-        </g>
-
-        <path d="M88 132 q30 30 60 0"
-              fill="#10202b"/>
-
-        <rect x="101" y="145" width="34" height="7"
-              fill="#ffffff"/>
-      `;
-
-    case "DEBUGGING":
-      return `
-        <g>
-          <rect x="67" y="99" width="25" height="25" fill="#10202b"/>
-          <rect x="123" y="99" width="25" height="25" fill="#10202b"/>
-          <rect x="73" y="103" width="8" height="8" fill="#ffffff"/>
-          <rect x="129" y="103" width="8" height="8" fill="#ffffff"/>
-        </g>
-
-        <path d="M92 141 h29"
-              stroke="#10202b"
-              stroke-width="6"/>
-
-        <path d="M59 80 l17 8 M157 80 l-17 8"
-              stroke="#22d3ee"
-              stroke-width="5"/>
-      `;
-
-    case "WELCOME":
-      return `
-        <g>
-          <rect x="67" y="91" width="25" height="31" fill="#10202b"/>
-          <rect x="123" y="91" width="25" height="31" fill="#10202b"/>
-          <rect x="74" y="97" width="9" height="9" fill="#ffffff"/>
-          <rect x="130" y="97" width="9" height="9" fill="#ffffff"/>
-        </g>
-
-        <path d="M88 132 q30 24 60 0"
-              fill="none"
-              stroke="#10202b"
-              stroke-width="6"/>
-      `;
-
-    case "IDLE":
-    default:
-      return `
-        <g>
-          <rect x="67" y="96" width="25" height="25" fill="#10202b"/>
-          <rect x="123" y="96" width="25" height="25" fill="#10202b"/>
-          <rect x="74" y="101" width="9" height="9" fill="#ffffff"/>
-          <rect x="130" y="101" width="9" height="9" fill="#ffffff"/>
-        </g>
-
-        <path d="M94 137 q17 13 34 0"
-              fill="none"
-              stroke="#10202b"
-              stroke-width="5"/>
-      `;
-  }
+// Pixel-art drawing helper.
+// Every rectangle is aligned to the character's pixel grid.
+function pixel(x, y, w, h, color) {
+  return `
+    <rect
+      x="${x}" y="${y}"
+      width="${w}" height="${h}"
+      fill="${color}"
+      shape-rendering="crispEdges"
+    />
+  `;
 }
 
-// Decorative effects for each state.
+// Original 16x24 pixel-art character.
+function getStandingCharacter(state) {
+  const c = COLORS;
+
+  let face = `
+    ${pixel(5, 8, 2, 2, c.outline)}
+    ${pixel(10, 8, 2, 2, c.outline)}
+    ${pixel(5, 8, 1, 1, c.white)}
+    ${pixel(10, 8, 1, 1, c.white)}
+    ${pixel(7, 7, 2, 1, c.hair)}
+    ${pixel(10, 7, 2, 1, c.hair)}
+    ${pixel(7, 11, 3, 2, c.beard)}
+    ${pixel(10, 11, 2, 2, c.beard)}
+    ${pixel(8, 12, 2, 1, c.mouth)}
+  `;
+
+  if (state === "WELCOME") {
+    face = `
+      ${pixel(5, 8, 2, 2, c.outline)}
+      ${pixel(10, 8, 2, 2, c.outline)}
+      ${pixel(5, 8, 1, 1, c.white)}
+      ${pixel(10, 8, 1, 1, c.white)}
+      ${pixel(7, 7, 2, 1, c.hair)}
+      ${pixel(10, 7, 2, 1, c.hair)}
+      ${pixel(7, 11, 5, 2, c.beard)}
+      ${pixel(8, 12, 3, 1, c.mouth)}
+    `;
+  }
+
+  if (state === "THINKING") {
+    face = `
+      ${pixel(5, 8, 2, 2, c.outline)}
+      ${pixel(10, 7, 2, 2, c.outline)}
+      ${pixel(5, 8, 1, 1, c.white)}
+      ${pixel(10, 7, 1, 1, c.white)}
+      ${pixel(7, 7, 2, 1, c.hair)}
+      ${pixel(10, 6, 2, 1, c.hair)}
+      ${pixel(7, 11, 3, 2, c.beard)}
+      ${pixel(10, 11, 2, 2, c.beard)}
+      ${pixel(8, 12, 2, 1, c.mouth)}
+    `;
+  }
+
+  if (state === "DEBUGGING") {
+    face = `
+      ${pixel(5, 8, 2, 2, c.outline)}
+      ${pixel(10, 8, 2, 2, c.outline)}
+      ${pixel(5, 9, 1, 1, c.white)}
+      ${pixel(10, 9, 1, 1, c.white)}
+      ${pixel(5, 7, 3, 1, c.hair)}
+      ${pixel(10, 7, 3, 1, c.hair)}
+      ${pixel(7, 11, 3, 2, c.beard)}
+      ${pixel(10, 11, 2, 2, c.beard)}
+      ${pixel(8, 12, 2, 1, c.mouth)}
+    `;
+  }
+
+  if (state === "CELEBRATING") {
+    face = `
+      ${pixel(5, 8, 2, 2, c.outline)}
+      ${pixel(10, 8, 2, 2, c.outline)}
+      ${pixel(5, 8, 1, 1, c.white)}
+      ${pixel(10, 8, 1, 1, c.white)}
+      ${pixel(7, 7, 2, 1, c.hair)}
+      ${pixel(10, 7, 2, 1, c.hair)}
+      ${pixel(7, 11, 5, 2, c.beard)}
+      ${pixel(8, 12, 3, 1, c.mouth)}
+    `;
+  }
+
+  if (state === "SLEEPING" || state === "IDLE") {
+    face = `
+      ${pixel(5, 8, 2, 1, c.outline)}
+      ${pixel(10, 8, 2, 1, c.outline)}
+      ${pixel(7, 7, 2, 1, c.hair)}
+      ${pixel(10, 7, 2, 1, c.hair)}
+      ${pixel(7, 11, 3, 2, c.beard)}
+      ${pixel(10, 11, 2, 2, c.beard)}
+      ${pixel(8, 12, 2, 1, c.mouth)}
+    `;
+  }
+
+  const hair = `
+    ${pixel(3, 3, 10, 2, c.outline)}
+    ${pixel(4, 2, 8, 2, c.hair)}
+    ${pixel(3, 3, 2, 2, c.hair)}
+    ${pixel(5, 1, 2, 2, c.hair)}
+    ${pixel(8, 1, 2, 2, c.hair)}
+    ${pixel(11, 2, 2, 2, c.hair)}
+  `;
+
+  const head = `
+    ${pixel(3, 4, 10, 8, c.outline)}
+    ${pixel(4, 4, 8, 7, c.skin)}
+    ${pixel(3, 6, 1, 3, c.skin)}
+    ${pixel(12, 6, 1, 3, c.skin)}
+    ${hair}
+    ${face}
+  `;
+
+  const body = `
+    ${pixel(4, 13, 9, 6, c.outline)}
+    ${pixel(5, 13, 7, 5, c.jacket)}
+    ${pixel(7, 13, 1, 5, c.zipper)}
+    ${pixel(5, 15, 2, 1, c.jacketDark)}
+    ${pixel(10, 15, 2, 1, c.jacketDark)}
+    ${pixel(3, 14, 2, 4, c.outline)}
+    ${pixel(3, 14, 1, 3, c.jacket)}
+    ${pixel(12, 14, 2, 4, c.outline)}
+    ${pixel(13, 14, 1, 3, c.jacket)}
+    ${pixel(3, 18, 1, 1, c.skin)}
+    ${pixel(13, 18, 1, 1, c.skin)}
+    ${pixel(5, 18, 7, 4, c.outline)}
+    ${pixel(6, 18, 2, 3, c.pants)}
+    ${pixel(9, 18, 2, 3, c.pants)}
+    ${pixel(5, 21, 3, 2, c.outline)}
+    ${pixel(9, 21, 3, 2, c.outline)}
+    ${pixel(4, 22, 4, 2, c.shoes)}
+    ${pixel(9, 22, 4, 2, c.shoes)}
+  `;
+
+  let action = "";
+
+  if (state === "CODING") {
+    action = `
+      ${pixel(1, 16, 4, 1, c.outline)}
+      ${pixel(1, 15, 4, 1, c.jacket)}
+      ${pixel(12, 16, 3, 1, c.outline)}
+      ${pixel(13, 15, 2, 1, c.skin)}
+      ${pixel(5, 17, 7, 1, c.cyan)}
+      ${pixel(5, 18, 7, 1, c.outline)}
+    `;
+  }
+
+  if (state === "CELEBRATING") {
+    action = `
+      ${pixel(1, 10, 2, 3, c.outline)}
+      ${pixel(1, 9, 1, 3, c.skin)}
+      ${pixel(13, 10, 2, 3, c.outline)}
+      ${pixel(14, 9, 1, 3, c.skin)}
+      ${pixel(1, 8, 1, 1, c.cyan)}
+      ${pixel(14, 8, 1, 1, c.cyan)}
+    `;
+  }
+
+  return `
+    <g class="standing-character">
+      ${head}
+      ${body}
+      ${action}
+    </g>
+  `;
+}
+
+// IDLE and SLEEPING use a completely different sleeping pose.
+// Booda lies on his side under a pixel-art blanket.
+function getSleepingCharacter() {
+  const c = COLORS;
+
+  return `
+    <g class="sleeping-character">
+
+      <!-- Pillow -->
+      ${pixel(3, 12, 8, 3, c.outline)}
+      ${pixel(4, 12, 6, 2, c.pillow)}
+      ${pixel(4, 14, 5, 1, "#b9c0ca")}
+
+      <!-- Hair -->
+      ${pixel(2, 7, 7, 5, c.outline)}
+      ${pixel(3, 6, 5, 2, c.hair)}
+      ${pixel(2, 7, 2, 3, c.hair)}
+      ${pixel(5, 5, 2, 2, c.hair)}
+      ${pixel(8, 7, 2, 2, c.hair)}
+
+      <!-- Face -->
+      ${pixel(4, 8, 7, 5, c.outline)}
+      ${pixel(5, 8, 6, 4, c.skin)}
+      ${pixel(10, 9, 2, 3, c.skin)}
+
+      <!-- Closed eye -->
+      ${pixel(7, 10, 2, 1, c.outline)}
+
+      <!-- Beard -->
+      ${pixel(5, 12, 6, 3, c.outline)}
+      ${pixel(6, 12, 4, 2, c.beard)}
+      ${pixel(9, 13, 2, 1, c.beard)}
+      ${pixel(7, 14, 2, 1, c.mouth)}
+
+      <!-- Neck -->
+      ${pixel(10, 13, 3, 3, c.skin)}
+
+      <!-- Body underneath blanket -->
+      ${pixel(11, 12, 11, 6, c.outline)}
+      ${pixel(12, 13, 9, 4, c.jacket)}
+
+      <!-- Blanket outline -->
+      ${pixel(10, 11, 13, 8, c.outline)}
+      ${pixel(11, 11, 11, 7, c.blanket)}
+      ${pixel(12, 12, 9, 5, c.blanketLight)}
+
+      <!-- Blanket folds -->
+      ${pixel(13, 13, 5, 1, c.blanketDark)}
+      ${pixel(17, 15, 4, 1, c.blanketDark)}
+      ${pixel(12, 17, 8, 1, c.blanketDark)}
+
+      <!-- Blanket edge -->
+      ${pixel(10, 11, 2, 8, c.outline)}
+      ${pixel(11, 12, 1, 6, c.blanketDark)}
+
+      <!-- Feet peeking out -->
+      ${pixel(21, 17, 3, 2, c.outline)}
+      ${pixel(22, 17, 2, 1, c.shoes)}
+
+      <!-- Sleep decoration -->
+      <g class="sleep-z">
+        <text x="19" y="8" fill="${c.cyan}"
+          font-family="monospace" font-size="5"
+          font-weight="bold">Z</text>
+        <text x="22" y="5" fill="${c.cyan}"
+          font-family="monospace" font-size="4"
+          font-weight="bold">z</text>
+      </g>
+
+    </g>
+  `;
+}
+
 function getStateEffects(state) {
   switch (state) {
+    case "IDLE":
     case "SLEEPING":
       return `
-        <g fill="#22d3ee"
-           font-family="monospace"
-           font-weight="bold">
-          <text x="178" y="45" font-size="17">Z</text>
-          <text x="195" y="27" font-size="23">Z</text>
-          <text x="215" y="5" font-size="29">Z</text>
+        <g fill="#22d3ee" font-family="monospace"
+          font-weight="bold">
+          <text x="675" y="74" font-size="17">Z</text>
+          <text x="697" y="53" font-size="22">Z</text>
+          <text x="720" y="28" font-size="28">Z</text>
         </g>
       `;
 
     case "CODING":
       return `
-        <g fill="#22d3ee"
-           font-family="monospace"
-           font-size="13"
-           font-weight="bold">
-          <text x="7" y="112">&lt;/&gt;</text>
-          <text x="183" y="145">{ }</text>
-          <text x="15" y="165">01</text>
+        <g fill="#22d3ee" font-family="monospace"
+          font-size="15" font-weight="bold">
+          <text x="518" y="105">&lt;/&gt;</text>
+          <text x="695" y="145">{ }</text>
+          <text x="527" y="183">01</text>
         </g>
       `;
 
     case "THINKING":
       return `
         <g fill="#22d3ee">
-          <circle cx="196" cy="49" r="5"/>
-          <circle cx="211" cy="31" r="8"/>
-          <circle cx="231" cy="10" r="11"/>
+          <circle cx="710" cy="51" r="5"/>
+          <circle cx="727" cy="33" r="8"/>
+          <circle cx="743" cy="12" r="10"/>
         </g>
       `;
 
     case "CELEBRATING":
       return `
         <g>
-          <path d="M14 44 l9 -15 9 15 Z" fill="#22d3ee"/>
-          <path d="M190 64 l7 -15 7 15 Z" fill="#fbbf24"/>
-          <path d="M213 94 l8 -16 8 16 Z" fill="#22d3ee"/>
-          <rect x="4" y="85" width="8" height="8" fill="#fbbf24"/>
-          <rect x="202" y="125" width="8" height="8" fill="#22d3ee"/>
+          <path d="M520 60 l10 -17 10 17 Z" fill="#22d3ee"/>
+          <path d="M710 68 l8 -16 8 16 Z" fill="#fbbf24"/>
+          <path d="M738 104 l8 -16 8 16 Z" fill="#22d3ee"/>
+          <rect x="518" y="125" width="8" height="8" fill="#fbbf24"/>
+          <rect x="730" y="165" width="8" height="8" fill="#22d3ee"/>
         </g>
       `;
 
     case "DEBUGGING":
       return `
         <g>
-          <path d="M190 38 l12 12 -12 12 -12 -12 Z"
-                fill="#fb7185"/>
-
-          <path d="M190 44 v9 M190 57 v2"
-                stroke="#10202b"
-                stroke-width="3"/>
-
-          <rect x="7" y="147" width="8" height="8"
-                fill="#fb7185"/>
+          <path d="M715 37 l13 13 -13 13 -13 -13 Z"
+            fill="#fb7185"/>
+          <path d="M715 44 v9 M715 57 v2"
+            stroke="#101116" stroke-width="3"/>
+          <rect x="526" y="155" width="8" height="8"
+            fill="#fb7185"/>
         </g>
       `;
 
     case "WELCOME":
       return `
         <g>
-          <path d="M202 43 v18 M193 52 h18"
-                stroke="#22d3ee"
-                stroke-width="4"/>
-
-          <path d="M9 69 v14 M2 76 h14"
-                stroke="#fbbf24"
-                stroke-width="4"/>
+          <path d="M718 40 v18 M709 49 h18"
+            stroke="#22d3ee" stroke-width="4"/>
+          <path d="M520 75 v14 M513 82 h14"
+            stroke="#fbbf24" stroke-width="4"/>
         </g>
       `;
 
     default:
       return `
         <g fill="#22d3ee">
-          <rect x="200" y="50" width="8" height="8"/>
-          <rect x="13" y="65" width="6" height="6"/>
+          <rect x="720" y="50" width="8" height="8"/>
+          <rect x="530" y="65" width="6" height="6"/>
         </g>
       `;
   }
@@ -429,16 +558,26 @@ function createSvg(message, mode, greeting, state) {
   const safeGreeting = escapeXml(greeting);
   const safeState = escapeXml(state);
 
+  const sleeping = state === "IDLE" || state === "SLEEPING";
+
+  const character = sleeping
+    ? getSleepingCharacter()
+    : getStandingCharacter(state);
+
+  const characterTransform = sleeping
+    ? "translate(532 92) scale(8)"
+    : "translate(566 50) scale(8)";
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
-     width="760"
-     height="320"
-     viewBox="0 0 760 320"
-     role="img"
-     aria-labelledby="title desc">
+  width="760"
+  height="320"
+  viewBox="0 0 760 320"
+  role="img"
+  aria-labelledby="title desc">
 
-  <title id="title">BOODA - Living AI Mascot</title>
-  <desc id="desc">Booda, a pixel-art AI robot with an expressive animated face.</desc>
+  <title id="title">BOODA - Pixel Art AI Mascot</title>
+  <desc id="desc">Booda, an original bearded pixel-art AI engineer. In idle mode he sleeps under a blanket.</desc>
 
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
@@ -446,83 +585,52 @@ function createSvg(message, mode, greeting, state) {
       <stop offset="1" stop-color="#07131e"/>
     </linearGradient>
 
-    <linearGradient id="orange" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fbbf24"/>
-      <stop offset="1" stop-color="#f59e0b"/>
-    </linearGradient>
-
-    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#67e8f9"/>
-      <stop offset="1" stop-color="#06b6d4"/>
-    </linearGradient>
-
     <pattern id="grid" width="24" height="24"
-             patternUnits="userSpaceOnUse">
+      patternUnits="userSpaceOnUse">
       <path d="M24 0 H0 V24"
-            fill="none"
-            stroke="#1e293b"
-            stroke-width="1"
-            opacity=".45"/>
+        fill="none"
+        stroke="#1e293b"
+        stroke-width="1"
+        opacity=".45"/>
     </pattern>
 
     <style>
-      .pixel {
+      * {
         shape-rendering: crispEdges;
       }
 
-      .robot {
-        animation: float 3.2s ease-in-out infinite;
-        transform-origin: 112px 140px;
+      .pixel-character {
+        transform-box: fill-box;
+        transform-origin: center;
       }
 
-      .antenna-light {
-        animation: glow 1.5s ease-in-out infinite;
-      }
-
-      .state-IDLE .robot {
-        animation-duration: 3.2s;
-      }
-
-      .state-SLEEPING .robot {
+      .state-IDLE .pixel-character,
+      .state-SLEEPING .pixel-character {
         animation: sleepFloat 5s ease-in-out infinite;
       }
 
-      .state-CODING .robot {
+      .state-CODING .pixel-character {
         animation: codingFloat 1.5s ease-in-out infinite;
       }
 
-      .state-THINKING .robot {
+      .state-THINKING .pixel-character {
         animation: thinkFloat 3s ease-in-out infinite;
       }
 
-      .state-CELEBRATING .robot {
+      .state-CELEBRATING .pixel-character {
         animation: celebrate .7s ease-in-out infinite;
       }
 
-      .state-DEBUGGING .robot {
+      .state-DEBUGGING .pixel-character {
         animation: debugShake .25s ease-in-out infinite;
       }
 
-      .state-WELCOME .robot {
+      .state-WELCOME .pixel-character {
         animation: welcomeFloat 2s ease-in-out infinite;
       }
 
-      .eyes {
-        transform-box: fill-box;
-        transform-origin: center;
-        animation: blink 4.8s infinite;
-      }
-
-      .state-SLEEPING .eyes {
-        animation: none;
-      }
-
-      .state-CELEBRATING .eyes {
-        animation: happyBlink 1.2s infinite;
-      }
-
-      .bubble {
-        filter: drop-shadow(0 8px 14px #0008);
+      .sleep-z {
+        animation: sleepZ 2.5s ease-in-out infinite;
       }
 
       .message {
@@ -548,14 +656,14 @@ function createSvg(message, mode, greeting, state) {
         letter-spacing: 1px;
       }
 
-      @keyframes float {
+      @keyframes sleepFloat {
         0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-9px); }
+        50% { transform: translateY(3px); }
       }
 
-      @keyframes sleepFloat {
-        0%, 100% { transform: translateY(2px); }
-        50% { transform: translateY(7px); }
+      @keyframes sleepZ {
+        0%, 100% { opacity: .45; }
+        50% { opacity: 1; }
       }
 
       @keyframes codingFloat {
@@ -565,13 +673,12 @@ function createSvg(message, mode, greeting, state) {
 
       @keyframes thinkFloat {
         0%, 100% { transform: translate(0, 0); }
-        50% { transform: translate(-3px, -7px); }
+        50% { transform: translate(-2px, -6px); }
       }
 
       @keyframes celebrate {
-        0%, 100% { transform: translateY(0) rotate(0); }
-        25% { transform: translateY(-12px) rotate(-3deg); }
-        75% { transform: translateY(-12px) rotate(3deg); }
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
       }
 
       @keyframes debugShake {
@@ -582,22 +689,13 @@ function createSvg(message, mode, greeting, state) {
 
       @keyframes welcomeFloat {
         0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-11px); }
+        50% { transform: translateY(-7px); }
       }
 
-      @keyframes blink {
-        0%, 43%, 47%, 100% { transform: scaleY(1); }
-        45%, 46% { transform: scaleY(.08); }
-      }
-
-      @keyframes happyBlink {
-        0%, 100% { opacity: 1; }
-        50% { opacity: .65; }
-      }
-
-      @keyframes glow {
-        0%, 100% { opacity: 1; }
-        50% { opacity: .35; }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+        }
       }
     </style>
   </defs>
@@ -607,9 +705,7 @@ function createSvg(message, mode, greeting, state) {
   <rect width="760" height="320" rx="18" fill="url(#grid)"/>
 
   <rect x="1" y="1" width="758" height="318" rx="17"
-        fill="none"
-        stroke="#243447"
-        stroke-width="2"/>
+    fill="none" stroke="#243447" stroke-width="2"/>
 
   <!-- Ambient pixels -->
   <g opacity=".8">
@@ -622,22 +718,20 @@ function createSvg(message, mode, greeting, state) {
   </g>
 
   <!-- Speech bubble -->
-  <g class="bubble">
+  <g>
     <path d="M24 45 H445 Q461 45 461 61 V190
-             Q461 206 445 206 H390
-             L421 231 L355 206 H40
-             Q24 206 24 190 Z"
-          fill="#111c2b"
-          stroke="#22d3ee"
-          stroke-width="2.5"/>
+      Q461 206 445 206 H390
+      L421 231 L355 206 H40
+      Q24 206 24 190 Z"
+      fill="#111c2b"
+      stroke="#22d3ee"
+      stroke-width="2.5"/>
 
     <path d="M25 61 Q25 46 41 46 H444"
-          fill="none"
-          stroke="#fbbf24"
-          stroke-width="3"/>
+      fill="none" stroke="#fbbf24" stroke-width="3"/>
 
     <rect x="43" y="65" width="9" height="9" fill="#fbbf24"/>
-    <text x="64" y="75" class="label">BOODA SAYS_</text>
+    <text x="64" y="75" class="label">BOODA SAYS</text>
 
     <text x="39" y="111" class="message">${messageLines}</text>
 
@@ -645,109 +739,29 @@ function createSvg(message, mode, greeting, state) {
     <rect x="66" y="174" width="9" height="4" fill="#fbbf24"/>
   </g>
 
-  <!-- Mascot stage -->
-  <ellipse cx="610" cy="286" rx="91" ry="10"
-           fill="#020617"
-           opacity=".65"/>
+  <!-- Character stage -->
+  <ellipse cx="625" cy="286" rx="91" ry="10"
+    fill="#020617" opacity=".65"/>
 
   <g class="state-${safeState}">
-    <g transform="translate(520 35) scale(.78)">
-      <g class="robot pixel">
-
-        <!-- State effects -->
-        ${getStateEffects(state)}
-
-        <!-- Antenna -->
-        <rect x="105" y="3" width="12" height="27" fill="#d97706"/>
-        <rect x="91" y="-8" width="40" height="18" fill="#f59e0b"/>
-        <rect x="99" y="-4" width="24" height="9" fill="#fff7ed"/>
-
-        <rect class="antenna-light"
-              x="104" y="-28"
-              width="14" height="14"
-              fill="#22d3ee"/>
-
-        <rect x="108" y="-24" width="6" height="6" fill="#ffffff"/>
-
-        <!-- Ears -->
-        <rect x="13" y="79" width="25" height="56" fill="#b45309"/>
-        <rect x="184" y="79" width="25" height="56" fill="#b45309"/>
-        <rect x="19" y="91" width="13" height="31" fill="#22d3ee"/>
-        <rect x="190" y="91" width="13" height="31" fill="#22d3ee"/>
-
-        <!-- Head shell -->
-        <rect x="31" y="34" width="174" height="145" fill="#92400e"/>
-        <rect x="37" y="29" width="162" height="143" fill="url(#orange)"/>
-
-        <!-- Face plate -->
-        <rect x="48" y="43" width="140" height="116" fill="#fcd34d"/>
-        <rect x="48" y="43" width="140" height="7"
-              fill="#fff1a8"
-              opacity=".7"/>
-
-        <!-- Face -->
-        <g class="eyes">
-          ${getFace(state)}
-        </g>
-
-        <!-- Head side details -->
-        <rect x="27" y="76" width="8" height="39" fill="#22d3ee"/>
-        <rect x="201" y="76" width="8" height="39" fill="#22d3ee"/>
-
-        <!-- Neck -->
-        <rect x="91" y="174" width="53" height="15" fill="#b45309"/>
-        <rect x="101" y="174" width="33" height="8" fill="#fbbf24"/>
-
-        <!-- Body -->
-        <rect x="47" y="187" width="142" height="82" fill="#92400e"/>
-        <rect x="54" y="183" width="128" height="78" fill="url(#orange)"/>
-
-        <!-- Chest frame -->
-        <rect x="75" y="197" width="86" height="49" fill="#10202b"/>
-        <rect x="81" y="203" width="74" height="37" fill="url(#cyan)"/>
-
-        <rect x="87" y="210" width="12" height="5" fill="#ffffff"/>
-        <rect x="104" y="210" width="34" height="5" fill="#ffffff"/>
-        <rect x="87" y="222" width="48" height="4" fill="#0e7490"/>
-        <rect x="141" y="222" width="7" height="4" fill="#0e7490"/>
-
-        <!-- Arms -->
-        <rect x="25" y="193" width="23" height="57" fill="#d97706"/>
-        <rect x="188" y="193" width="23" height="57" fill="#d97706"/>
-
-        <rect x="18" y="235" width="30" height="23" fill="#fbbf24"/>
-        <rect x="188" y="235" width="30" height="23" fill="#fbbf24"/>
-
-        <!-- Hands -->
-        <rect x="12" y="249" width="38" height="13" fill="#b45309"/>
-        <rect x="186" y="249" width="38" height="13" fill="#b45309"/>
-
-        <!-- Legs -->
-        <rect x="72" y="261" width="33" height="22" fill="#b45309"/>
-        <rect x="132" y="261" width="33" height="22" fill="#b45309"/>
-
-        <!-- Feet -->
-        <rect x="61" y="277" width="48" height="12" fill="#f59e0b"/>
-        <rect x="128" y="277" width="48" height="12" fill="#f59e0b"/>
-
-        <!-- Cyan accents -->
-        <rect x="57" y="189" width="17" height="5" fill="#22d3ee"/>
-        <rect x="155" y="189" width="17" height="5" fill="#22d3ee"/>
-
-      </g>
+    <g class="pixel-character" transform="${characterTransform}">
+      ${character}
     </g>
   </g>
+
+  <!-- State effects -->
+  ${getStateEffects(state)}
 
   <!-- Status panel -->
   <g>
     <rect x="489" y="286" width="242" height="22" rx="5"
-          fill="#111c2b"
-          stroke="#243447"/>
+      fill="#111c2b" stroke="#243447"/>
 
     <circle cx="503" cy="297" r="4" fill="#22d3ee"/>
 
     <text x="514" y="301" class="footer">${safeState}</text>
-    <text x="716" y="301" class="footer" text-anchor="end">ONLINE</text>
+    <text x="716" y="301" class="footer"
+      text-anchor="end">ONLINE</text>
   </g>
 
   <!-- Footer -->
@@ -781,7 +795,10 @@ export default function handler(req, res) {
     state
   );
 
-  res.setHeader("Content-Type", "image/svg+xml; charset=utf-8");
+  res.setHeader(
+    "Content-Type",
+    "image/svg+xml; charset=utf-8"
+  );
 
   res.setHeader(
     "Cache-Control",
